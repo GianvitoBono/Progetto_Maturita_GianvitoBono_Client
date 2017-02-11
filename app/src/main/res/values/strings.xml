@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Crypted Chat</string>
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
+    <string name="action_settings">Settings</string>
+    <string name="crea_viaggio">Create travel</string>
+    <string name="username">Username</string>
+    <string name="accedi">Login</string>
+    <string name="benvenuto">Welcome %1$s %2$s</string>
+    <string name="err_login">Wrong username or password</string>
+    <string name="err_server_conn">Unreachable host</string>
+    <string name="err_null_user_or_pass">Fill the form</string>
+</resources>
