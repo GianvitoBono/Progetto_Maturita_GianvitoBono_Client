@@ -8,6 +8,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -22,8 +23,6 @@ public class Login extends AppCompatActivity {
     private String name;
     private String surname;
 
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,7 +35,6 @@ public class Login extends AppCompatActivity {
         etEmail = (EditText) findViewById(R.id.etEmail) ;
         etPassword = (EditText) findViewById(R.id.etPassword);
         //----------------------------------------------------------
-
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -53,6 +51,7 @@ public class Login extends AppCompatActivity {
         }
     };
 
+
     private boolean login() {
         String responce = connectorService.comunicate(Utils.SERVER_IP, Utils.SERVER_PORT, Utils.login(etEmail.getText().toString(), etEmail.getText().toString()), this);
         if(responce.split(Utils.REGEX)[1].equals("success")) {
@@ -61,6 +60,10 @@ public class Login extends AppCompatActivity {
             return true;
         }
         return false;
+    }
+
+    public void bLoginClicked(View view){
+        connectorService.doSomething();
     }
 
     private boolean register() {

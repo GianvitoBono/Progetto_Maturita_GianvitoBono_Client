@@ -53,7 +53,8 @@
             android:layout_below="@+id/etPassword"
             android:layout_centerHorizontal="true"
             style="@style/Widget.AppCompat.Button.Borderless"
-            android:background="@drawable/bg_button" />
+            android:background="@drawable/bg_button"
+            android:onClick="bLoginClicked" />
 
         <ProgressBar
             style="?android:attr/progressBarStyle"

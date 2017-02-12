@@ -28,12 +28,14 @@ public class Connector extends Thread {
     private int port;
     private SSLSocket socket;
     private IOManager ioManager;
+    private SynchronizedQueue<String> synchronizedQueue;
 
-    public Connector(String ip, int port, String request, Context context){
+    public Connector(String ip, int port, String request, Context context, SynchronizedQueue<String> synchronizedQueue){
         this.ip = ip;
         this.port = port;
         this.request = request;
         this.context = context;
+        this.synchronizedQueue = synchronizedQueue;
     }
 
     @Override
