@@ -30,9 +30,9 @@ public class SynchronizedQueue<T> {
         }
     }
 
-    public Collection<T> getAll(boolean remove) {
+    public ArrayList<T> getAll(boolean remove) {
         synchronized (this) {
-            Collection<T> ret = new ArrayList<T>();
+            ArrayList<T> ret = new ArrayList<T>();
             for (T t : messages) {
                 ret.add(t);
             }

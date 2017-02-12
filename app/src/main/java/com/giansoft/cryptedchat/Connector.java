@@ -21,18 +21,14 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class Connector extends Thread {
 
-    private String responce;
     private String request;
     private Context context;
-    private String ip;
-    private int port;
-    private SSLSocket socket;
-    private IOManager ioManager;
     private SynchronizedQueue<String> synchronizedQueue;
 
-    public Connector(String ip, int port, String request, Context context, SynchronizedQueue<String> synchronizedQueue){
-        this.ip = ip;
-        this.port = port;
+    private SSLSocket socket;
+    private IOManager ioManager;
+
+    public Connector(String request, Context context, SynchronizedQueue synchronizedQueue){
         this.request = request;
         this.context = context;
         this.synchronizedQueue = synchronizedQueue;
@@ -41,11 +37,12 @@ public class Connector extends Thread {
     @Override
     public void run(){
         try {
-            socket = getConnection(ip, port);
+            socket = getConnection(Utils.SERVER_IP, Utils.SERVER_PORT);
             ioManager = new IOManager(socket);
-            System.out.println("[+] Connesso al server: " + ip + ":" + port);
+            System.out.println("[+] Connesso al server: " + Utils.SERVER_IP + ":" + Utils.SERVER_PORT);
             ioManager.write(request);
-            responce = ioManager.read();
+            String responce = ioManager.read();
+            synchronizedQueue.add(responce);
             ioManager.close();
             socket.close();
 
@@ -72,9 +69,8 @@ public class Connector extends Thread {
             return socket;
         } catch (GeneralSecurityException e) {
             Log.e(this.getClass().toString(), "Exception while creating context: ", e);
-            throw new IOException("Could not connect to Server", e);
+            throw new IOException("Could not connect to SSL Server", e);
         }
     }
 
-    public String getResponce(){ return responce; }
 }

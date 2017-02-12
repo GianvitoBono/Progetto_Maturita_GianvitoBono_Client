@@ -18,26 +18,9 @@ public class ConnectorService extends Service {
         return connectorBinder;
     }
 
-    public void doSomething(){
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                for(int i = 0; i < 100000; i++)
-                    System.out.println("=================================================================================");
-            }
-        });
-        t.start();
-        try {
-            t.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public String comunicate(String ip, int port, String request, Context context, SynchronizedQueue<String> synchronizedQueue) {
-            Connector connector = new Connector(ip, port, request, context, synchronizedQueue);
+    public void comunicate(String request, Context context, SynchronizedQueue<String> synchronizedQueue) {
+            Connector connector = new Connector(request, context, synchronizedQueue);
             connector.start();
-            return connector.getResponce();
     }
 
     public class ConnectorBinder extends Binder {

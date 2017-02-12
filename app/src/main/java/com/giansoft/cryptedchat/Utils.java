@@ -10,7 +10,7 @@ import android.widget.Toast;
 public class Utils {
     public static final String SERVER_IP = "192.168.0.128";
     public static final int SERVER_PORT = 3943;
-    public static final String REGEX = "*:#";
+    public static final String REGEX = ":";
 
     public static String login(String email, String passwd) {
         return ("0" + REGEX + email + REGEX + passwd);
