@@ -1,12 +1,12 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
     <solid
-        android:color="#ffffff" />
+        android:color="@color/Prova2Scuro" />
     <padding android:left="7dp"
         android:top="7dp"
         android:right="7dp"
         android:bottom="7dp" />
     <stroke
         android:width="2dip"
-        android:color="#FFFFFF" />
+        android:color="@color/Prova2Scuro" />
     <corners android:radius= "50dip" />
 </shape>

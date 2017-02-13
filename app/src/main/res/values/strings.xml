@@ -10,4 +10,5 @@
     <string name="err_login">Wrong username or password</string>
     <string name="err_server_conn">Unreachable host</string>
     <string name="err_null_user_or_pass">Fill the form</string>
+    <string name="title_activity_main">Main</string>
 </resources>

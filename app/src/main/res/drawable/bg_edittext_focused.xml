@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <shape xmlns:android="http://schemas.android.com/apk/res/android" >
-    <solid android:color="#FFFFFF" />
+    <solid android:color="@color/Prova2Chiaro1" />
     <stroke
         android:width="2dip"
-        android:color="#F6F6F6" />
+        android:color="@color/Prova2Medio" />
     <corners android:radius="2dip" />
     <padding
         android:bottom="7dip"

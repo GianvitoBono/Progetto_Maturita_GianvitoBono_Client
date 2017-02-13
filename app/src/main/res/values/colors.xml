@@ -1,6 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimary">#FFEB3B</color>
+    <color name="colorPrimaryDark">#fbc02d</color>
+    <color name="colorPrimaryLight">#fff9c4</color>
+    <color name="colorAccent">#FFC107</color>
+    <color name="colorPrimaryText">#212121</color>
+    <color name="colorSecondaryText">#757575</color>
+    <color name="colorIcons">#212121</color>
+    <color name="colorDivider">#BDBDBD</color>
+    <color name="ProvaScuro">#f0ffed</color>
+    <color name="ProvaChiaro">#d6ffed</color>
+    <color name="Prova2Chiaro1">#ffffff</color>
+    <color name="Prova2Medio">#f6f6f6</color>
+    <color name="Prova2Scuro">#d2d2d2</color>
 </resources>

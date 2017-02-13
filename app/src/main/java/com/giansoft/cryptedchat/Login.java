@@ -90,7 +90,10 @@ public class Login extends AppCompatActivity {
                         if(res_splitted[0] != null && res_splitted[0].equals("success")) {
                             name = res_splitted[1];
                             surname = res_splitted[2];
-                            System.out.println(name + " " + surname);
+                            startActivity(new Intent(Login.this, Main.class)
+                                    .putExtra("name", name)
+                                    .putExtra("surname", surname)
+                                    .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
                         }
 
                     } else {

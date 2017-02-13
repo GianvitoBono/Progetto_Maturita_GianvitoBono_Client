@@ -22,6 +22,11 @@
             android:name=".ConnectorService"
             android:enabled="true"
             android:exported="true" />
+
+        <activity
+            android:name=".Main"
+            android:label="@string/title_activity_main"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
