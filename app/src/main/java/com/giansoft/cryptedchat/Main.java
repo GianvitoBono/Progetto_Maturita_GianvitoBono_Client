@@ -1,8 +1,12 @@
 package com.giansoft.cryptedchat;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -22,7 +26,15 @@ public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private String name, surname;
-    private TabHost tabHost;
+    private ConnectorService connectorService;
+    private boolean isBound = false;
+    private SynchronizedQueue<String> synchronizedQueue = new SynchronizedQueue<>();
+
+    @Override
+    protected void onStart() {
+        bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
+        //connectorService.comunicate();
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +54,6 @@ public class Main extends AppCompatActivity
         View hView =  navigationView.getHeaderView(0);
         TextView tvHeadName = (TextView)hView.findViewById(R.id.tvHeadName);
         TextView tvHeadLoginInfo = (TextView)hView.findViewById(R.id.tvHeadLoginInfo);
-        tabHost = (TabHost)findViewById(R.id.tabHost);
         Intent intent = getIntent();
         name = intent.getStringExtra("name");
         surname = intent.getStringExtra("surname");
@@ -57,28 +68,6 @@ public class Main extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     @SuppressWarnings("StatementWithEmptyBody")
@@ -105,4 +94,18 @@ public class Main extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder) {
+            ConnectorService.ConnectorBinder binder = (ConnectorService.ConnectorBinder) iBinder;
+            connectorService = binder.getService();
+            isBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName) {
+            isBound = false;
+        }
+    };
 }

@@ -35,4 +35,8 @@ public class Utils {
     public static void errNullUserOrPassToast(Context ctx) {
         Toast.makeText(ctx, ctx.getString(R.string.err_null_user_or_pass), Toast.LENGTH_SHORT).show();
     }
+
+    public static String addIP(){
+        return "";
+    }
 }
