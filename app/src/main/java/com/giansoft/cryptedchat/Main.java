@@ -32,6 +32,7 @@ public class Main extends AppCompatActivity
 
     @Override
     protected void onStart() {
+        super.onStart();
         bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
         //connectorService.comunicate();
     }

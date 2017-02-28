@@ -20,7 +20,7 @@ import java.util.Collection;
 
 public class Login extends AppCompatActivity {
 
-    private Button bLogin;
+    private Button bLogin, bReg;
     private ProgressBar progressBar;
     private EditText etEmail, etPassword;
     private ConnectorService connectorService;
@@ -37,9 +37,9 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         //---Init---------------------------------------------------
-        synchronizedQueue = new SynchronizedQueue<>();
         bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
         bLogin = (Button) findViewById(R.id.bLogin);
+        bReg = (Button) findViewById(R.id.bReg);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         etEmail = (EditText) findViewById(R.id.etEmail) ;
         etPassword = (EditText) findViewById(R.id.etPassword);
@@ -64,6 +64,7 @@ public class Login extends AppCompatActivity {
     public void login(View view) {
         try {
             bLogin.setVisibility(View.GONE);
+            bReg.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
             connectorService.comunicate(Utils.login(etEmail.getText().toString(), etPassword.getText().toString()), this, synchronizedQueue);
 
@@ -104,6 +105,7 @@ public class Login extends AppCompatActivity {
                         }
                     }
                     bLogin.setVisibility(View.VISIBLE);
+                    bReg.setVisibility(View.VISIBLE);
                     progressBar.setVisibility(View.GONE);
                 }
             };
@@ -111,6 +113,10 @@ public class Login extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void register(View view) {
+        startActivity(new Intent(Login.this, Register.class).addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
     }
 
 }

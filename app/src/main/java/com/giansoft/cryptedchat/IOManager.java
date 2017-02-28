@@ -26,7 +26,7 @@ public class IOManager {
 
     public boolean write(String message){
         try {
-            out.println(Crypter.encrypt(message));
+            out.println(message);
             return true;
         } catch (Exception e){
             System.err.println("[-] Error: " + e);
@@ -36,7 +36,7 @@ public class IOManager {
 
     public String read(){
         try {
-            return Crypter.decrypt(in.readLine());
+            return in.readLine();
         } catch (Exception e){
             System.err.println("[-] Error: " + e);
             return null;

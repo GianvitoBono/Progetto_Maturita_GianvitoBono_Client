@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/CryptedChat.iml" filepath="$PROJECT_DIR$/CryptedChat.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Progetto_Maturita_GianvitoBono_Client.iml" filepath="$PROJECT_DIR$/Progetto_Maturita_GianvitoBono_Client.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

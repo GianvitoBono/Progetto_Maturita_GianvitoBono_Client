@@ -8,12 +8,16 @@ import android.widget.Toast;
  */
 
 public class Utils {
-    public static final String SERVER_IP = "192.168.0.128";
+    public static final String SERVER_IP = "192.168.0.13";
     public static final int SERVER_PORT = 3943;
     public static final String REGEX = ":";
 
     public static String login(String email, String passwd) {
         return ("0" + REGEX + email + REGEX + passwd);
+    }
+
+    public static String register(String name, String surname, String tel, String password, String nickname) {
+        return "3" + REGEX + name + REGEX + surname + REGEX + nickname + REGEX + password + REGEX + tel;
     }
 
     public static String echo(String message) {
@@ -28,6 +32,10 @@ public class Utils {
         Toast.makeText(ctx, ctx.getString(R.string.err_login), Toast.LENGTH_SHORT).show();
     }
 
+    public static void errRegisterToast(Context ctx) {
+        Toast.makeText(ctx, "Registrazione fallita", Toast.LENGTH_SHORT).show();
+    }
+
     public static void errServerConnToast(Context ctx) {
         Toast.makeText(ctx, ctx.getString(R.string.err_server_conn), Toast.LENGTH_SHORT).show();
     }
@@ -36,7 +44,7 @@ public class Utils {
         Toast.makeText(ctx, ctx.getString(R.string.err_null_user_or_pass), Toast.LENGTH_SHORT).show();
     }
 
-    public static String addIP(){
-        return "";
+    public static void errPassNotEquals(Context ctx) {
+        Toast.makeText(ctx, "Le password inserite non corrispondono", Toast.LENGTH_SHORT).show();
     }
 }
