@@ -47,4 +47,8 @@ public class Utils {
     public static void errPassNotEquals(Context ctx) {
         Toast.makeText(ctx, "Le password inserite non corrispondono", Toast.LENGTH_SHORT).show();
     }
+
+    public static String logIP(String tel) {
+        return "1:" + tel;
+    }
 }

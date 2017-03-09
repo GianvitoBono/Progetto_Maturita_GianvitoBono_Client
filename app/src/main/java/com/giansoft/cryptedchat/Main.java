@@ -29,6 +29,7 @@ public class Main extends AppCompatActivity
     private ConnectorService connectorService;
     private boolean isBound = false;
     private SynchronizedQueue<String> synchronizedQueue = new SynchronizedQueue<>();
+    private SecurePreferences securePreferences;
 
     @Override
     protected void onStart() {
@@ -43,6 +44,8 @@ public class Main extends AppCompatActivity
         setContentView(R.layout.activity_main);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        securePreferences = new SecurePreferences(this);
 
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
@@ -102,6 +105,7 @@ public class Main extends AppCompatActivity
             ConnectorService.ConnectorBinder binder = (ConnectorService.ConnectorBinder) iBinder;
             connectorService = binder.getService();
             isBound = true;
+            connectorService.comunicate(Utils.logIP(securePreferences.getString("tel")), Main.this, synchronizedQueue);
         }
 
         @Override

@@ -28,14 +28,14 @@ public class Login extends AppCompatActivity {
     private String name;
     private String surname;
     private SynchronizedQueue<String> synchronizedQueue = new SynchronizedQueue<>();
-
+    private SecurePreferences securePreferences;
     private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
+        securePreferences = new SecurePreferences(this);
         //---Init---------------------------------------------------
         bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
         bLogin = (Button) findViewById(R.id.bLogin);

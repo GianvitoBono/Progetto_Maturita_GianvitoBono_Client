@@ -23,6 +23,11 @@ public class ConnectorService extends Service {
             connector.start();
     }
 
+    public void comunicate(String ip, int port, String request, Context context, SynchronizedQueue synchronizedQueue) {
+        Connector connector = new Connector(ip, port, request, context, synchronizedQueue);
+        connector.start();
+    }
+
     public class ConnectorBinder extends Binder {
         ConnectorService getService() {
             return ConnectorService.this;

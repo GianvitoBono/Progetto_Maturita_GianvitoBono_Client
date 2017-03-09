@@ -27,8 +27,20 @@ public class Connector extends Thread {
 
     private SSLSocket socket;
     private IOManager ioManager;
+    private String ip;
+    private int port;
 
     public Connector(String request, Context context, SynchronizedQueue synchronizedQueue){
+        this.ip = Utils.SERVER_IP;
+        this.port = Utils.SERVER_PORT;
+        this.request = request;
+        this.context = context;
+        this.synchronizedQueue = synchronizedQueue;
+    }
+
+    public Connector(String ip, int port, String request, Context context, SynchronizedQueue synchronizedQueue){
+        this.ip = ip;
+        this.port = port;
         this.request = request;
         this.context = context;
         this.synchronizedQueue = synchronizedQueue;
@@ -37,9 +49,9 @@ public class Connector extends Thread {
     @Override
     public void run(){
         try {
-            socket = getConnection(Utils.SERVER_IP, Utils.SERVER_PORT);
+            socket = getConnection(ip, port);
             ioManager = new IOManager(socket);
-            System.out.println("[+] Connesso al server: " + Utils.SERVER_IP + ":" + Utils.SERVER_PORT);
+            System.out.println("[+] Connesso al server: " + ip + ":" + port);
             ioManager.write(request);
             String responce = ioManager.read();
             synchronizedQueue.add(responce);

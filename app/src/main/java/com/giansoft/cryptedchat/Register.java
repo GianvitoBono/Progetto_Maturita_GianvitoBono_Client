@@ -26,12 +26,15 @@ public class Register extends AppCompatActivity {
     private ConnectorService connectorService;
     private boolean isBound = false;
     private Handler handler;
+    private SecurePreferences securePreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
         bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
+
+        securePreferences = new SecurePreferences(this);
         bReg = (Button) findViewById(R.id.bReg);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         etUsername = (EditText) findViewById(R.id.etUsername);
@@ -88,6 +91,8 @@ public class Register extends AppCompatActivity {
                         ArrayList<String> results = synchronizedQueue.getAll(true);
                         if (results.size() == 1) {
                             if (results.get(0).equals("1")) {
+                                securePreferences.putString("tel", etCell.getText().toString());
+                                securePreferences.putBoolean("reg", true);
                                 startActivity(new Intent(Register.this, Main.class).putExtra("name", etName.getText().toString())
                                         .putExtra("surname", etSurname.getText().toString()));
                             } else {
