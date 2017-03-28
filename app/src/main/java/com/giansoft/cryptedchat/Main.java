@@ -19,6 +19,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.TextView;
 
@@ -30,12 +32,13 @@ public class Main extends AppCompatActivity
     private boolean isBound = false;
     private SynchronizedQueue<String> synchronizedQueue = new SynchronizedQueue<>();
     private SecurePreferences securePreferences;
+    private ListView lvChat;
+
 
     @Override
     protected void onStart() {
         super.onStart();
         bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
-        //connectorService.comunicate();
     }
 
     @Override
@@ -62,6 +65,14 @@ public class Main extends AppCompatActivity
         name = intent.getStringExtra("name");
         surname = intent.getStringExtra("surname");
         tvHeadName.setText(name + " " + surname);
+        new SQLiteManager(this).addUser("Nome1", "Cognome1", "Username1", "3458302965");
+
+        Contact[] contacts = (Contact[]) new SQLiteManager(this).getUsers().toArray();
+        ListAdapter contactAdapter = new ContactListAdapter(this, R.layout.contact_inflater, contacts);
+        lvChat = (ListView) findViewById(R.id.lvChat);
+        lvChat.setAdapter(contactAdapter);
+
+
     }
 
     @Override
