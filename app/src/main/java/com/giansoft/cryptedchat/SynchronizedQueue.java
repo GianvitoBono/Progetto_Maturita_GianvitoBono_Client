@@ -60,7 +60,7 @@ public class SynchronizedQueue<T> {
     }
 
     public interface QueueObjectSerializer<T> {
-        public void serialize(PrintWriter writer, T t);
+        void serialize(PrintWriter writer, T t);
     }
 
     public QueueObjectSerializer<T> getDefaultSerializer() {

@@ -8,7 +8,7 @@ import android.widget.Toast;
  */
 
 public class Utils {
-    public static final String SERVER_IP = "192.168.0.13";
+    public static final String SERVER_IP = "192.168.0.2";
     public static final int SERVER_PORT = 3943;
     public static final String REGEX = ":";
 

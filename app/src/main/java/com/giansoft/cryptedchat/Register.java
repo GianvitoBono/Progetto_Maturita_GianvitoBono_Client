@@ -29,10 +29,15 @@ public class Register extends AppCompatActivity {
     private SecurePreferences securePreferences;
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-        bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
 
         securePreferences = new SecurePreferences(this);
         bReg = (Button) findViewById(R.id.bReg);
@@ -52,13 +57,13 @@ public class Register extends AppCompatActivity {
             bReg.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
 
-            if(     etUsername.getText() != null &&
-                    etName.getText() != null &&
-                    etSurname.getText() != null &&
-                    etEmail.getText() != null &&
-                    etCell.getText() != null &&
-                    etPassword.getText() != null &&
-                    etRPassword.getText() != null)
+            if(     etUsername.getText() == null &&
+                    etName.getText() == null &&
+                    etSurname.getText() == null &&
+                    etEmail.getText() == null &&
+                    etCell.getText() == null &&
+                    etPassword.getText() == null &&
+                    etRPassword.getText() == null)
                 if(!etPassword.getText().toString().equals(etRPassword.getText().toString()))
                     Utils.errPassNotEquals(this);
                 else

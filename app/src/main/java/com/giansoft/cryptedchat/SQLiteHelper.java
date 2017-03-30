@@ -25,17 +25,17 @@ public class SQLiteHelper extends SQLiteOpenHelper{
         private final static String MESSAGES_SENT = "sent";
 
     private final static String TB_USERS_CREATE = "CREATE TABLE " + TB_USERS + "(" +
-            USERS_TEL + " TEXT PRYMARY KEY" +
-            USERS_NAME + " TEXT " +
-            USERS_SURNAME + " TEXT " +
+            USERS_TEL + " TEXT PRYMARY KEY, " +
+            USERS_NAME + " TEXT, " +
+            USERS_SURNAME + " TEXT, " +
             USERS_USERNAME + " TEXT " +
             ");";
 
     private final static String TB_MESSAGES_CREATE = "CREATE TABLE " + TB_MESSAGES + "(" +
-            MESSAGES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT " +
-            MESSAGES_USER_FK + " TEXT " +
-            MESSAGES_MESSAGE + " TEXT " +
-            MESSAGES_SENT + " TEXT " +
+            MESSAGES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
+            MESSAGES_USER_FK + " TEXT, " +
+            MESSAGES_MESSAGE + " TEXT, " +
+            MESSAGES_SENT + " TEXT, " +
             " FOREIGN KEY (" + MESSAGES_USER_FK + ") REFERENCES " + TB_USERS + "(" + USERS_TEL + ") " +
             ");";
 
