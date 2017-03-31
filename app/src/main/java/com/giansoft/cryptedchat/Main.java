@@ -112,6 +112,8 @@ public class Main extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
+    
+    
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
         @Override
