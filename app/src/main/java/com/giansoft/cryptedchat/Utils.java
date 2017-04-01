@@ -51,4 +51,8 @@ public class Utils {
     public static String logIP(String tel) {
         return "1:" + tel;
     }
+    
+    public static String DelIP(String tel) {
+    	return "8: " + tel;
+    }
 }
