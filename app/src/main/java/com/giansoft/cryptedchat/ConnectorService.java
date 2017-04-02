@@ -18,12 +18,12 @@ public class ConnectorService extends Service {
         return connectorBinder;
     }
 
-    public void comunicate(String request, Context context, SynchronizedQueue<String> synchronizedQueue) {
+    public void comunicate(Msg request, Context context, SynchronizedQueue<Object> synchronizedQueue) {
             Connector connector = new Connector(request, context, synchronizedQueue);
             connector.start();
     }
 
-    public void comunicate(String ip, int port, String request, Context context, SynchronizedQueue synchronizedQueue) {
+    public void comunicate(String ip, int port, Msg request, Context context, SynchronizedQueue<Object> synchronizedQueue) {
         Connector connector = new Connector(ip, port, request, context, synchronizedQueue);
         connector.start();
     }

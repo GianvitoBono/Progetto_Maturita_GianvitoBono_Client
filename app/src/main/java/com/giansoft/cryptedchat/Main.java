@@ -4,9 +4,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.database.Cursor;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TabLayout;
@@ -25,6 +29,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 
 public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -32,14 +37,14 @@ public class Main extends AppCompatActivity
     private String name, surname;
     private ConnectorService connectorService;
     private boolean isBound = false;
-    private SynchronizedQueue<String> synchronizedQueue = new SynchronizedQueue<>();
+    private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
     private SecurePreferences securePreferences;
-
+    private Handler handler;
 
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, ConnectorService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -50,7 +55,7 @@ public class Main extends AppCompatActivity
         setSupportActionBar(toolbar);
 
         securePreferences = new SecurePreferences(this);
-
+        //securePreferences.putBoolean("firstLog", true);
         DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
         ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
                 this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
@@ -59,9 +64,8 @@ public class Main extends AppCompatActivity
 
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
-        View hView =  navigationView.getHeaderView(0);
-        TextView tvHeadName = (TextView)hView.findViewById(R.id.tvHeadName);
-        TextView tvHeadLoginInfo = (TextView)hView.findViewById(R.id.tvHeadLoginInfo);
+        View hView = navigationView.getHeaderView(0);
+        TextView tvHeadName = (TextView) hView.findViewById(R.id.tvHeadName);
         Intent intent = getIntent();
         name = intent.getStringExtra("name");
         surname = intent.getStringExtra("surname");
@@ -71,9 +75,10 @@ public class Main extends AppCompatActivity
         ContactListAdapter contactAdapter = new ContactListAdapter(this, contacts);
         ListView lvChat = (ListView) findViewById(R.id.lvChat);
         lvChat.setAdapter(contactAdapter);
-        ArrayList<Contact> newContacts = new SQLiteManager(this).getUsers();
+
+        /*ArrayList<Contact> newContacts = new SQLiteManager(this).getUsers();
         if(!newContacts.isEmpty())
-            contactAdapter.addAll(newContacts);
+            contactAdapter.addAll(newContacts);*/
 
 
     }
@@ -112,7 +117,89 @@ public class Main extends AppCompatActivity
         drawer.closeDrawer(GravityCompat.START);
         return true;
     }
-    
+
+    public void getUsers() {
+        //Popolazione tabella user database
+        try {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    Cursor phones = getContentResolver().query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+                    ArrayList<String> telNumbers = new ArrayList<>();
+                    while (phones.moveToNext()) {
+                        String phoneNumber = phones.getString(phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("\\s+", "");
+                        if (!telNumbers.contains(phoneNumber))
+                            if (phoneNumber.charAt(0) == '+')
+                                telNumbers.add(phoneNumber.substring(3));
+                            else
+                                telNumbers.add(phoneNumber);
+                    }
+                    phones.close();
+
+                    //Connessione col server centrale per controllo numeri sul DB remoto--------------------
+                    for (String tel : telNumbers) {
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        connectorService.comunicate(Utils.checkUser(tel), Main.this, synchronizedQueue);
+
+                        new Thread(new Runnable() {
+                            @Override
+                            public void run() {
+                                while (synchronizedQueue.isEmpty())
+                                    try {
+                                        Thread.sleep(0);
+                                    } catch (InterruptedException e) {
+                                        System.err.println("[-] Error: " + e);
+                                    }
+                                handler.sendEmptyMessage(0);
+                            }
+
+                        }).start();
+
+                        handler = new Handler() {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                ArrayList<Object> results = synchronizedQueue.getAll(true);
+                                if (results.size() == 1) {
+                                    Msg responce = (Msg) results.get(0);
+                                    if (!results.get(0).equals("no_user")) {
+                                        /*String res_splitted[] = results.get(0);
+                                        if (res_splitted[0] != null && res_splitted[0].equals("success")) {
+                                            String name = res_splitted[0];
+                                            String surname = res_splitted[1];
+                                            String uname = res_splitted[2];
+                                            String tel = res_splitted[3];
+                                            new SQLiteManager(Main.this).addUser(name, surname, uname, tel);
+                                        }*/
+                                    }
+                                } else {
+                                    try {
+                                        throw new Exception();
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                            }
+                        };
+
+                    }
+                }
+            }).start();
+        //--------------------------------------------------------------------------------------
+
+        } catch(Exception e){
+            e.printStackTrace();
+        }
+
+    }
+
+
+
+
+
     
 
     private ServiceConnection serviceConnection = new ServiceConnection() {
@@ -122,6 +209,10 @@ public class Main extends AppCompatActivity
             connectorService = binder.getService();
             isBound = true;
             connectorService.comunicate(Utils.logIP(securePreferences.getString("tel")), Main.this, synchronizedQueue);
+            //if(securePreferences.getBoolean("firstLog")) {
+                getUsers();
+                securePreferences.putBoolean("firstLog", false);
+            //}
         }
 
         @Override

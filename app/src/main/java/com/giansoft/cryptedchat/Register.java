@@ -22,7 +22,7 @@ public class Register extends AppCompatActivity {
     private Button bReg;
     private ProgressBar progressBar;
     private EditText etUsername, etName, etSurname, etEmail, etCell, etPassword, etRPassword;
-    private SynchronizedQueue<String> synchronizedQueue = new SynchronizedQueue<>();
+    private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
     private ConnectorService connectorService;
     private boolean isBound = false;
     private Handler handler;
@@ -54,7 +54,7 @@ public class Register extends AppCompatActivity {
 
     public void register(View view) {
         try {
-            bReg.setVisibility(View.GONE);
+            bReg.setVisibility(View.INVISIBLE);
             progressBar.setVisibility(View.VISIBLE);
 
             if(     etUsername.getText() == null &&
@@ -73,7 +73,8 @@ public class Register extends AppCompatActivity {
                         etSurname.getText().toString(),
                         etCell.getText().toString(),
                         etPassword.getText().toString(),
-                        etUsername.getText().toString()),
+                        etUsername.getText().toString(),
+                        etEmail.getText().toString()),
                         this, synchronizedQueue);
 
                 new Thread(new Runnable() {
@@ -81,7 +82,7 @@ public class Register extends AppCompatActivity {
                     public void run() {
                         while (synchronizedQueue.isEmpty())
                             try {
-                                Thread.sleep(5);
+                                Thread.sleep(3);
                             } catch (InterruptedException e) {
                                 System.err.println("[-] Error: " + e);
                             }
@@ -93,9 +94,10 @@ public class Register extends AppCompatActivity {
                 handler = new Handler() {
                     @Override
                     public void handleMessage(Message msg) {
-                        ArrayList<String> results = synchronizedQueue.getAll(true);
+                        ArrayList<Object> results = synchronizedQueue.getAll(true);
                         if (results.size() == 1) {
-                            if (results.get(0).equals("1")) {
+                            Msg responce = (Msg) results.get(0);
+                            if ((int) responce.getData().get(0) == 1) {
                                 securePreferences.putString("tel", etCell.getText().toString());
                                 securePreferences.putBoolean("reg", true);
                                 startActivity(new Intent(Register.this, Main.class).putExtra("name", etName.getText().toString())
@@ -105,7 +107,7 @@ public class Register extends AppCompatActivity {
                             }
                         }
                         bReg.setVisibility(View.VISIBLE);
-                        progressBar.setVisibility(View.GONE);
+                        progressBar.setVisibility(View.INVISIBLE);
                     }
                 };
             }

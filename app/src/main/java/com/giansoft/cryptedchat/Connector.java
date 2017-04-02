@@ -5,6 +5,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.UnknownHostException;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
@@ -21,16 +23,16 @@ import javax.net.ssl.TrustManagerFactory;
 
 public class Connector extends Thread {
 
-    private String request;
+    private Msg request;
     private Context context;
-    private SynchronizedQueue<String> synchronizedQueue;
+    private SynchronizedQueue<Object> synchronizedQueue;
 
     private SSLSocket socket;
     private IOManager ioManager;
     private String ip;
     private int port;
 
-    public Connector(String request, Context context, SynchronizedQueue synchronizedQueue){
+    public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue){
         this.ip = Utils.SERVER_IP;
         this.port = Utils.SERVER_PORT;
         this.request = request;
@@ -38,7 +40,7 @@ public class Connector extends Thread {
         this.synchronizedQueue = synchronizedQueue;
     }
 
-    public Connector(String ip, int port, String request, Context context, SynchronizedQueue synchronizedQueue){
+    public Connector(String ip, int port, Msg request, Context context, SynchronizedQueue synchronizedQueue){
         this.ip = ip;
         this.port = port;
         this.request = request;
@@ -53,7 +55,7 @@ public class Connector extends Thread {
             ioManager = new IOManager(socket);
             System.out.println("[+] Connesso al server: " + ip + ":" + port);
             ioManager.write(request);
-            String responce = ioManager.read();
+            Object responce = ioManager.read();
             synchronizedQueue.add(responce);
             ioManager.close();
             socket.close();

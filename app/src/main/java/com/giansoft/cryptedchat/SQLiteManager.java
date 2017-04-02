@@ -22,7 +22,6 @@ public class SQLiteManager {
 
     public void addUser(String name, String surname, String username, String tel) {
         try {
-            sqLiteHelper.getWritableDatabase().execSQL("DELETE from users WHERE tel LIKE '" + Crypter.encrypt("Nome1") + "'");
             sqLiteHelper.getWritableDatabase().execSQL("INSERT INTO users VALUES('" + Crypter.encrypt(tel) + "', '" + Crypter.encrypt(name) + "', '" + Crypter.encrypt(surname) + "', '" + Crypter.encrypt(username) + "')");
         } catch (Exception e) {
             e.printStackTrace();
@@ -46,7 +45,6 @@ public class SQLiteManager {
                     String name = Crypter.decrypt(c.getString(c.getColumnIndex("name")));
                     String surname = Crypter.decrypt(c.getString(c.getColumnIndex("surname")));
                     String username = Crypter.decrypt(c.getString(c.getColumnIndex("nickname")));
-                    System.out.println(" ------------------------- " + name + "     " + surname + "       " + username);
                     contacts.add(new Contact(name, surname, username));
                 } while (c.moveToNext());
                 return contacts;

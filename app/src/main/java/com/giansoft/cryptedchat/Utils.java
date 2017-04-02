@@ -3,6 +3,8 @@ package com.giansoft.cryptedchat;
 import android.content.Context;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+
 /**
  * Created by Gianvito on 13/11/2016.
  */
@@ -12,16 +14,42 @@ public class Utils {
     public static final int SERVER_PORT = 3943;
     public static final String REGEX = ":";
 
-    public static String login(String email, String passwd) {
-        return ("0" + REGEX + email + REGEX + passwd);
+    public final static int LOGIN = 0;
+    public final static int ADD_TO_IP_LIST = 1;
+    public final static int SEARCH_USER = 2;
+    public final static int ADD_USER = 3;
+    public final static int GET_USER_IP = 4;
+    public final static int STORE_MESSAGE = 5;
+    public final static int FETCH_MESSAGES = 6;
+    public final static int ECHO = 7;
+    public final static int DEL_IP = 8;
+
+    public static Msg login(String email, String passwd) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(email);
+        data.add(passwd);
+        return new Msg(LOGIN, data);
     }
 
-    public static String register(String name, String surname, String tel, String password, String nickname) {
-        return "3" + REGEX + name + REGEX + surname + REGEX + nickname + REGEX + password + REGEX + tel;
+    public static Msg register(String name, String surname, String tel, String password, String nickname, String email) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(name);
+        data.add(surname);
+        data.add(nickname);
+        data.add(email);
+        data.add(password);
+        data.add(tel);
+        return new Msg(ADD_USER, data);
     }
 
     public static String echo(String message) {
         return ("7" + REGEX + message);
+    }
+
+    public static Msg checkUser(String tel) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(tel);
+        return new Msg(SEARCH_USER, data);
     }
 
     public static void nameToast(Context ctx, String name, String surname) {
@@ -48,8 +76,10 @@ public class Utils {
         Toast.makeText(ctx, "Le password inserite non corrispondono", Toast.LENGTH_SHORT).show();
     }
 
-    public static String logIP(String tel) {
-        return "1:" + tel;
+    public static Msg logIP(String tel) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(tel);
+        return new Msg(ADD_TO_IP_LIST, data);
     }
     
     public static String DelIP(String tel) {

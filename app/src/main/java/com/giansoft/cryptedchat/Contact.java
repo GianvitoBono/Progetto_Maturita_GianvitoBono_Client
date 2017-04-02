@@ -8,11 +8,27 @@ public class Contact {
     private String name;
     private String surname;
     private String username;
+    private String tel;
 
     public Contact(String name, String surname, String username) {
         this.name = name;
         this.surname = surname;
         this.username = username;
+    }
+
+    public Contact(String name, String surname, String username, String tel) {
+        this.name = name;
+        this.surname = surname;
+        this.username = username;
+        this.tel = tel;
+    }
+
+    public String getTel() {
+        return tel;
+    }
+
+    public void setTel(String tel) {
+        this.tel = tel;
     }
 
     public String getName() {
