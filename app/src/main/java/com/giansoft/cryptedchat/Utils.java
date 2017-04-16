@@ -46,10 +46,8 @@ public class Utils {
         return ("7" + REGEX + message);
     }
 
-    public static Msg checkUser(String tel) {
-        ArrayList<Object> data = new ArrayList<>();
-        data.add(tel);
-        return new Msg(SEARCH_USER, data);
+    public static Msg checkUsers(ArrayList<Object> tel) {
+        return new Msg(SEARCH_USER, tel);
     }
 
     public static void nameToast(Context ctx, String name, String surname) {

@@ -36,12 +36,8 @@ public class SecurePreferences {
 
     public boolean getBoolean(String key){
         try {
-            String str = Crypter.decrypt(prefs.getString(Crypter.encrypt(key), null));
-            if(str != null) {
-                return str.equals("true");
-            } else
-                return false;
-
+            String str = Crypter.decrypt(prefs.getString(Crypter.encrypt(key), Crypter.encrypt("false")));
+            return str.equals("true");
         } catch (Exception e) {
             e.printStackTrace();
             return false;

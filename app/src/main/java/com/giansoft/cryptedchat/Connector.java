@@ -76,14 +76,14 @@ public class Connector extends Thread {
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustStore);
 
-            SSLContext sslContext = SSLContext.getInstance("SSL");
+            SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
             SSLSocketFactory factory = sslContext.getSocketFactory();
             SSLSocket socket = (SSLSocket) factory.createSocket(ip, port);
             return socket;
         } catch (GeneralSecurityException e) {
-            Log.e(this.getClass().toString(), "Exception while creating context: ", e);
-            throw new IOException("Could not connect to SSL Server", e);
+            Log.e(this.getClass().toString(), "Errore nella creazione del context: ", e);
+            throw new IOException("Impossibile connettersi al server", e);
         }
     }
 

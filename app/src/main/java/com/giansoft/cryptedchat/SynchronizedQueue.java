@@ -3,15 +3,12 @@ package com.giansoft.cryptedchat;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Queue;
 
 /**
- * This class allows threads to communicate asynchronously by putting messages into and reading
- * messages out of a synchronized queue.
- *
- * @author Gabe Johnson <johnsogg@cmu.edu>
+ * Questa classe permette di far comunicare i threads in modo asincrono scrivendo e leggendo i dati
+ * da questa coda sincronizzata
  */
 
 public class SynchronizedQueue<T> {

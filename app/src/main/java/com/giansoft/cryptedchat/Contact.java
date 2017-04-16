@@ -1,14 +1,17 @@
 package com.giansoft.cryptedchat;
 
+import java.io.Serializable;
+
 /**
  * Created by gianv on 22/03/2017.
  */
 
-public class Contact {
+public class Contact implements Serializable{
     private String name;
     private String surname;
     private String username;
     private String tel;
+    static final long serialVersionUID = 151836L;
 
     public Contact(String name, String surname, String username) {
         this.name = name;

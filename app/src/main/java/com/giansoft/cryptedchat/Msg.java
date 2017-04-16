@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class Msg implements Serializable{
     private int id;
     private ArrayList<Object> data;
+    static final long serialVersionUID = 151836L;
 
     public Msg(int id, ArrayList<Object> data) {
         this.id = id;
