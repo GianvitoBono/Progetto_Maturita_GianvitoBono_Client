@@ -1,10 +1,14 @@
 package com.giansoft.cryptedchat;
 
+import android.Manifest;
+import android.app.Dialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -16,12 +20,21 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
+
+import static android.R.attr.dial;
+import static android.R.attr.phoneNumber;
 
 public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -32,6 +45,10 @@ public class Main extends AppCompatActivity
     private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
     private SecurePreferences securePreferences;
     private Handler handler;
+    private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
+    private ContactListAdapter contactAdapter;
+    private EditText etTel;
+    private Dialog dialog;
 
     @Override
     protected void onStart() {
@@ -44,6 +61,7 @@ public class Main extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
 
+        connectorService.comunicate(Utils.DelIP(securePreferences.getString("tel")), this);
         if(connectorService != null)
             unbindService(serviceConnection);
     }
@@ -73,13 +91,24 @@ public class Main extends AppCompatActivity
         tvHeadName.setText(name + " " + surname);
 
         ArrayList<Contact> contacts = new ArrayList<>();
-        ContactListAdapter contactAdapter = new ContactListAdapter(this, contacts);
-        ListView lvChat = (ListView) findViewById(R.id.lvChat);
+        contactAdapter = new ContactListAdapter(this, contacts);
+        final ListView lvChat = (ListView) findViewById(R.id.lvChat);
         lvChat.setAdapter(contactAdapter);
+        lvChat.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view,
+                                    int position, long id) {
 
-         ArrayList<Contact> newContacts = new SQLiteManager(this).getUsers();
-        if(newContacts != null && !newContacts.isEmpty())
-            contactAdapter.addAll(newContacts);
+                Object o = lvChat.getItemAtPosition(position);
+                Contact c = (Contact) o;
+
+                startActivity(new Intent(Main.this, Chat.class).putExtra("name", c.getName())
+                                                               .putExtra("surname", c.getSurname())
+                                                               .putExtra("tel", c.getTel()));
+            }
+        });
+
+        if(securePreferences.getString("tel") == null)
+            showTelDialog();
 
 
     }
@@ -105,70 +134,133 @@ public class Main extends AppCompatActivity
         return true;
     }
 
-    public void getUsers() {
-        //Popolazione tabella user database
-        try {
-            Cursor phones = getContentResolver()
-                 .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-            ArrayList<Object> telNumbers = new ArrayList<>();
-            while (phones.moveToNext()) {
-                String phoneNumber = phones.getString(
-                        phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("\\s+", "");
-                if (!telNumbers.contains(phoneNumber))
-                    if (phoneNumber.charAt(0) == '+')
-                        telNumbers.add(phoneNumber.substring(3));
-                    else
-                        telNumbers.add(phoneNumber);
-            }
-            phones.close();
+    public void showTelDialog() {
+        dialog = new Dialog(this);
 
-            connectorService.comunicate(Utils.checkUsers(telNumbers), Main.this, synchronizedQueue);
+        dialog.getWindow();
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.custom_dialog1);
+        dialog.setCancelable(true);
 
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while (synchronizedQueue.isEmpty())
-                        try {
-                            Thread.sleep(3);
-                        } catch (InterruptedException e) {
-                            System.err.println("[-] Error: " + e);
-                        }
-                    handler.sendEmptyMessage(0);
+
+        etTel = (EditText) dialog.findViewById(R.id.etTel);
+        Button btOk = (Button) dialog.findViewById(R.id.btOk);
+        Button btAnnulla = (Button) dialog.findViewById(R.id.btAnnulla);
+
+        btOk.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(!etTel.getText().toString().isEmpty()) {
+                    securePreferences.putString("tel", etTel.getText().toString());
+                    connectorService.comunicate(Utils.logIP(etTel.getText().toString()), Main.this);
+                    dialog.dismiss();
+                } else {
+                    Utils.errRegisterToast(Main.this);
                 }
+            }
+        });
+        btAnnulla.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+            }
+        });
+        dialog.show();
+    }
 
-            }).start();
+    public void addUsersToList(){
+        ArrayList<Contact> newContacts = new SQLiteManager(this).getUsers();
+        contactAdapter.clear();
+        if(newContacts != null && !newContacts.isEmpty())
+            contactAdapter.addAll(newContacts);
+    }
 
-            handler = new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    ArrayList<Object> results = synchronizedQueue.getAll(true);
-                    if (results.size() == 1) {
-                        Msg responce = (Msg) results.get(0);
-                        if (responce != null && responce.getId() == 151836) {
-                            if (!responce.getData().isEmpty()) {
-                                for (Object c : responce.getData()) {
-                                    Contact contact = (Contact) c;
-                                    new SQLiteManager(Main.this).addUser(contact.getName(),
-                                                                         contact.getSurname(),
-                                                                         contact.getUsername(),
-                                                                         contact.getTel());
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                           int[] grantResults) {
+        if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Permission is granted
+                getUsers();
+            } else {
+                Toast.makeText(this, "Finchè non acconsenti non potrati vedere i contatti nella lista", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public void getUsers() {
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
+                return;
+            }
+                Cursor phones = getContentResolver()
+                        .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+                ArrayList<Object> telNumbers = new ArrayList<>();
+
+                while (phones.moveToNext()) {
+                    String tmp = phones.getString(
+                            phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("\\s+", "");
+                    String phoneNumber;
+                    if (tmp.charAt(0) == '+')
+                        phoneNumber = tmp.substring(3);
+                    else
+                        phoneNumber = tmp;
+
+                    if (!telNumbers.contains(phoneNumber))
+                        telNumbers.add(phoneNumber);
+                }
+                phones.close();
+
+                connectorService.comunicate(Utils.checkUsers(telNumbers), Main.this, synchronizedQueue);
+
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        while (synchronizedQueue.isEmpty())
+                            try {
+                                Thread.sleep(10);
+                            } catch (InterruptedException e) {
+                                System.err.println("[-] Error: " + e);
+                            }
+                        handler.sendEmptyMessage(0);
+                    }
+
+                }).start();
+
+                handler = new Handler() {
+                    @Override
+                    public void handleMessage(Message msg) {
+                        ArrayList<Object> results = synchronizedQueue.getAll(true);
+                        if (results.size() == 1) {
+                            Msg responce = (Msg) results.get(0);
+                            if (responce != null && responce.getId() != 151836) {
+                                if (!responce.getData().isEmpty()) {
+                                    new SQLiteManager(Main.this).clearUsers(true);
+                                    for (Object c : responce.getData()) {
+                                        Contact contact = (Contact) c;
+                                        new SQLiteManager(Main.this).addUser(contact.getName(),
+                                                contact.getSurname(),
+                                                contact.getUsername(),
+                                                contact.getTel());
+                                    }
+                                    addUsersToList();
                                 }
                             }
-                        }
-                    } else {
-                        try {
-                            throw new Exception();
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                        } else {
+                            try {
+                                throw new Exception();
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
-                }
-            };
-            //--------------------------------------------------------------------------------------
+                };
+                //--------------------------------------------------------------------------------------
 
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
 
     }
 
@@ -179,8 +271,9 @@ public class Main extends AppCompatActivity
             ConnectorService.ConnectorBinder binder = (ConnectorService.ConnectorBinder) iBinder;
             connectorService = binder.getService();
             isBound = true;
-            //connectorService.comunicate(Utils.logIP(securePreferences.getString("tel")), Main.this, synchronizedQueue);
+            connectorService.comunicate(Utils.logIP(securePreferences.getString("tel")), Main.this);
             //if(securePreferences.getBoolean("firstLog")) {
+
             getUsers();
             //securePreferences.putBoolean("firstLog", false);
             //}

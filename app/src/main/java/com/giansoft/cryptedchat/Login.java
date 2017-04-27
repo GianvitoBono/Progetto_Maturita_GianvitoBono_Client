@@ -67,6 +67,7 @@ public class Login extends AppCompatActivity {
         etEmail = (EditText) findViewById(R.id.etEmail) ;
         etPassword = (EditText) findViewById(R.id.etPassword);
         //----------------------------------------------------------
+        securePreferences.putString("tel", "3458302965");
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {

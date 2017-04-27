@@ -28,6 +28,11 @@ public class ConnectorService extends Service {
         connector.start();
     }
 
+    public void comunicate(Msg request, Context context) {
+        Connector connector = new Connector(request, context);
+        connector.start();
+    }
+
     public class ConnectorBinder extends Binder {
         ConnectorService getService() {
             return ConnectorService.this;

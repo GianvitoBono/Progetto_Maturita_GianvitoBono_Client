@@ -3,7 +3,7 @@
     package="com.giansoft.cryptedchat">
 
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
 
     <application
         android:allowBackup="true"
@@ -26,9 +26,15 @@
 
         <activity
             android:name=".Main"
-            android:label="@string/title_activity_main"
+            android:label="Crypted Chat"
             android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name=".Register"></activity>
+        <activity android:name=".Register" />
+        <activity android:name=".Chat" />
+
+        <service
+            android:name=".ServerService"
+            android:enabled="true"
+            android:exported="true"></service>
     </application>
 
 </manifest>

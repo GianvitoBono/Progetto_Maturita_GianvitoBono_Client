@@ -11,6 +11,8 @@ public class Msg implements Serializable{
     private int id;
     private ArrayList<Object> data;
     static final long serialVersionUID = 151836L;
+    private String message;
+    private String datetime;
 
     public Msg(int id, ArrayList<Object> data) {
         this.id = id;

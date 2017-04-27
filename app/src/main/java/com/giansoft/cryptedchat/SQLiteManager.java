@@ -36,6 +36,12 @@ public class SQLiteManager {
         }
     }
 
+    public void clearUsers(boolean sure) {
+        if(sure) {
+            sqLiteHelper.getWritableDatabase().delete("users", null, null);
+        }
+    }
+
     public ArrayList<Contact> getUsers() {
         try {
             ArrayList<Contact> contacts = new ArrayList<>();

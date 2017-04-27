@@ -3,7 +3,9 @@ package com.giansoft.cryptedchat;
 import android.content.Context;
 import android.widget.Toast;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 /**
  * Created by Gianvito on 13/11/2016.
@@ -80,7 +82,14 @@ public class Utils {
         return new Msg(ADD_TO_IP_LIST, data);
     }
     
-    public static String DelIP(String tel) {
-    	return "8: " + tel;
+    public static Msg DelIP(String tel) {
+    	ArrayList<Object> data = new ArrayList<>();
+        data.add(tel);
+        return new Msg(DEL_IP, data);
+    }
+
+    public static String getCurDate() {
+        SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy - kk:mm");
+        return df.format(Calendar.getInstance().getTime());
     }
 }

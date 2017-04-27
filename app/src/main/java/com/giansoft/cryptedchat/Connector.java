@@ -31,6 +31,7 @@ public class Connector extends Thread {
     private IOManager ioManager;
     private String ip;
     private int port;
+    private boolean flag = true;
 
     public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue){
         this.ip = Utils.SERVER_IP;
@@ -48,6 +49,14 @@ public class Connector extends Thread {
         this.synchronizedQueue = synchronizedQueue;
     }
 
+    public Connector(Msg request, Context context){
+        this.ip = Utils.SERVER_IP;
+        this.port = Utils.SERVER_PORT;
+        this.request = request;
+        this.context = context;
+        this.flag = false;
+    }
+
     @Override
     public void run(){
         try {
@@ -55,8 +64,10 @@ public class Connector extends Thread {
             ioManager = new IOManager(socket);
             System.out.println("[+] Connesso al server: " + ip + ":" + port);
             ioManager.write(request);
-            Object responce = ioManager.read();
-            synchronizedQueue.add(responce);
+            if(flag) {
+                Object responce = ioManager.read();
+                synchronizedQueue.add(responce);
+            }
             ioManager.close();
             socket.close();
 
