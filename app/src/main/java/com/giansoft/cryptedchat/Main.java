@@ -20,7 +20,6 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -32,9 +31,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-
-import static android.R.attr.dial;
-import static android.R.attr.phoneNumber;
 
 public class Main extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -61,7 +57,7 @@ public class Main extends AppCompatActivity
     protected void onDestroy() {
         super.onDestroy();
 
-        connectorService.comunicate(Utils.DelIP(securePreferences.getString("tel")), this);
+        connectorService.comunicate(Utils.delIP(securePreferences.getString("tel")), this);
         if(connectorService != null)
             unbindService(serviceConnection);
     }
@@ -100,7 +96,7 @@ public class Main extends AppCompatActivity
 
                 Object o = lvChat.getItemAtPosition(position);
                 Contact c = (Contact) o;
-
+                System.out.println(c.getTel());
                 startActivity(new Intent(Main.this, Chat.class).putExtra("name", c.getName())
                                                                .putExtra("surname", c.getSurname())
                                                                .putExtra("tel", c.getTel()));
@@ -219,7 +215,7 @@ public class Main extends AppCompatActivity
                     public void run() {
                         while (synchronizedQueue.isEmpty())
                             try {
-                                Thread.sleep(10);
+                                Thread.sleep(1);
                             } catch (InterruptedException e) {
                                 System.err.println("[-] Error: " + e);
                             }

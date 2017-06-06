@@ -21,10 +21,15 @@ public class Utils {
     public final static int SEARCH_USER = 2;
     public final static int ADD_USER = 3;
     public final static int GET_USER_IP = 4;
-    public final static int STORE_MESSAGE = 5;
-    public final static int FETCH_MESSAGES = 6;
-    public final static int ECHO = 7;
     public final static int DEL_IP = 8;
+    public final static int GEN_KEY = 9;
+    public final static int GET_KEY = 11;
+    public final static int DEL_KEY = 12;
+    public final static int DEL_SESSION = 13;
+    public final static int CHECK_SESSION = 14;
+    public final static int SUCCESS = 3001;
+    public final static int FAIL = 2206;
+    public final static int NO_USERS = 151836;
 
     public static Msg login(String email, String passwd) {
         ArrayList<Object> data = new ArrayList<>();
@@ -82,7 +87,7 @@ public class Utils {
         return new Msg(ADD_TO_IP_LIST, data);
     }
     
-    public static Msg DelIP(String tel) {
+    public static Msg delIP(String tel) {
     	ArrayList<Object> data = new ArrayList<>();
         data.add(tel);
         return new Msg(DEL_IP, data);
@@ -91,5 +96,17 @@ public class Utils {
     public static String getCurDate() {
         SimpleDateFormat df = new SimpleDateFormat("dd/MM/yyyy - kk:mm");
         return df.format(Calendar.getInstance().getTime());
+    }
+
+    public static Msg getIP(String tel) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(tel);
+        return new Msg(GET_USER_IP, data);
+    }
+
+    public static Msg genSessionKey(String tel) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(tel);
+        return new Msg(GEN_KEY, data);
     }
 }

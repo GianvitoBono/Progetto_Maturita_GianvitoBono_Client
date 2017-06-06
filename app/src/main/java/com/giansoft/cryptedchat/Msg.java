@@ -34,4 +34,20 @@ public class Msg implements Serializable{
     public void setData(ArrayList<Object> data) {
         this.data = data;
     }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public String getDatetime() {
+        return datetime;
+    }
+
+    public void setDatetime(String datetime) {
+        this.datetime = datetime;
+    }
 }

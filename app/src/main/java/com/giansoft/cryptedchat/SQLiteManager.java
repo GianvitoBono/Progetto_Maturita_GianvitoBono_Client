@@ -45,13 +45,14 @@ public class SQLiteManager {
     public ArrayList<Contact> getUsers() {
         try {
             ArrayList<Contact> contacts = new ArrayList<>();
-            Cursor c = sqLiteHelper.getReadableDatabase().rawQuery("SELECT name, surname, nickname FROM users", null);
+            Cursor c = sqLiteHelper.getReadableDatabase().rawQuery("SELECT name, surname, nickname, tel FROM users", null);
             if (c.moveToFirst()) {
                 do {
                     String name = Crypter.decrypt(c.getString(c.getColumnIndex("name")));
                     String surname = Crypter.decrypt(c.getString(c.getColumnIndex("surname")));
                     String username = Crypter.decrypt(c.getString(c.getColumnIndex("nickname")));
-                    contacts.add(new Contact(name, surname, username));
+                    String tel = Crypter.decrypt(c.getString(c.getColumnIndex("tel")));
+                    contacts.add(new Contact(name, surname, username, tel));
                 } while (c.moveToNext());
                 return contacts;
             }

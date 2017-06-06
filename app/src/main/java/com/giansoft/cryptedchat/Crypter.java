@@ -26,6 +26,7 @@ public class Crypter{
         byte[] decValue = c.doFinal(Base64.decode(encryptedData, Base64.DEFAULT));
         return new String(decValue);
     }
+
     private static Key generateKey() throws Exception {
         Key key = new SecretKeySpec(keyValue, ALGO);
         return key;

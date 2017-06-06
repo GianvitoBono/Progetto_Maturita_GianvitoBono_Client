@@ -31,10 +31,6 @@
         <activity android:name=".Register" />
         <activity android:name=".Chat" />
 
-        <service
-            android:name=".ServerService"
-            android:enabled="true"
-            android:exported="true"></service>
     </application>
 
 </manifest>

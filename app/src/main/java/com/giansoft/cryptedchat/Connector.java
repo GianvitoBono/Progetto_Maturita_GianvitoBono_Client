@@ -32,6 +32,8 @@ public class Connector extends Thread {
     private String ip;
     private int port;
     private boolean flag = true;
+    private boolean async = true;
+    private Msg res;
 
     public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue){
         this.ip = Utils.SERVER_IP;
@@ -57,6 +59,15 @@ public class Connector extends Thread {
         this.flag = false;
     }
 
+    public Connector(Msg request, Context context, boolean async){
+        this.ip = Utils.SERVER_IP;
+        this.port = Utils.SERVER_PORT;
+        this.request = request;
+        this.context = context;
+        this.flag = false;
+        this.async = async;
+    }
+
     @Override
     public void run(){
         try {
@@ -65,8 +76,12 @@ public class Connector extends Thread {
             System.out.println("[+] Connesso al server: " + ip + ":" + port);
             ioManager.write(request);
             if(flag) {
-                Object responce = ioManager.read();
-                synchronizedQueue.add(responce);
+                if(async) {
+                    Object responce = ioManager.read();
+                    synchronizedQueue.add(responce);
+                } else {
+                    res = (Msg)ioManager.read();
+                }
             }
             ioManager.close();
             socket.close();
@@ -78,15 +93,17 @@ public class Connector extends Thread {
         }
     }
 
+    public Msg getRes() {
+        return res;
+    }
+
     protected SSLSocket getConnection(String ip, int port) throws IOException {
         try {
             KeyStore trustStore = KeyStore.getInstance("BKS");
             InputStream trustStoreStream = context.getResources().openRawResource(R.raw.cacerts);
             trustStore.load(trustStoreStream, "38wVZQcJGLkyQSzKwuk4RuGE".toCharArray());
-
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
             trustManagerFactory.init(trustStore);
-
             SSLContext sslContext = SSLContext.getInstance("TLSv1.2");
             sslContext.init(null, trustManagerFactory.getTrustManagers(), null);
             SSLSocketFactory factory = sslContext.getSocketFactory();
