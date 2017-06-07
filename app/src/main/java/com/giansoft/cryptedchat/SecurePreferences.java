@@ -6,6 +6,10 @@ package com.giansoft.cryptedchat;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import com.google.gson.Gson;
+
+import javax.crypto.SecretKey;
+
 public class SecurePreferences {
     private static final String PREFS_NAME = "sp_125486.bin";
     private Context ctx;
@@ -75,6 +79,28 @@ public class SecurePreferences {
             e.printStackTrace();
             return false;
         }
+    }
+
+    public boolean putKey(String key, SecretKey val) {
+        try {
+            SharedPreferences.Editor editor = prefs.edit();
+            String secretKeyToJSON = new Gson().toJson(val);
+            editor.putString(Crypter.encrypt(secretKeyToJSON), Crypter.encrypt(String.valueOf(val)));
+            return editor.commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public SecretKey getKey(String key) {
+            try {
+                String JSONobj = Crypter.decrypt(prefs.getString(Crypter.encrypt(key), null));
+                return new Gson().fromJson(JSONobj, SecretKey.class);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
     }
 
 }

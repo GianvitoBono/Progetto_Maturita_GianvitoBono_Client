@@ -1,5 +1,7 @@
 package com.giansoft.cryptedchat;
 
+import com.google.gson.Gson;
+
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -23,34 +25,66 @@ public class IOManager {
         }
     }
 
-    public boolean write(Msg message){
+    public boolean write(Msg message) {
         try {
             out.writeObject(message);
             out.flush();
             return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("[-] Error: " + e);
             return false;
         }
     }
 
-    public Object read(){
+    public Object read() {
         try {
             return in.readObject();
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("[-] Error: " + e);
             return null;
         }
     }
 
-    public boolean close(){
-        try{
+    public boolean close() {
+        try {
             in.close();
             out.close();
             return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             System.err.println("[-] Error: " + e);
             return false;
+        }
+    }
+
+    public boolean writeJSON(Msg JSON) {
+        try {
+            String objToJSON = new Gson().toJson(JSON);
+            out.writeChars(Crypter.encrypt(objToJSON));
+            out.close();
+            return true;
+        } catch (Exception e) {
+            System.err.println("[-] Error: " + e);
+            return false;
+        }
+    }
+
+    public boolean writeString(String msg) {
+        try {
+            out.writeChars(msg);
+            out.close();
+            return true;
+        } catch (Exception e) {
+            System.err.println("[-] Error: " + e);
+            return false;
+        }
+    }
+
+    public String readString() {
+        try {
+            return in.readUTF();
+        } catch (Exception e) {
+            System.err.println("[-] Error: " + e);
+            return null;
         }
     }
 

@@ -30,6 +30,8 @@ public class Utils {
     public final static int SUCCESS = 3001;
     public final static int FAIL = 2206;
     public final static int NO_USERS = 151836;
+    public final static int HELLO = 15052015;
+    public final static int SECURE = 2112;
 
     public static Msg login(String email, String passwd) {
         ArrayList<Object> data = new ArrayList<>();
@@ -108,5 +110,10 @@ public class Utils {
         ArrayList<Object> data = new ArrayList<>();
         data.add(tel);
         return new Msg(GEN_KEY, data);
+    }
+
+    public static boolean isKeyValid(String tel, Context ctx) {
+        SecurePreferences securePreferences = new SecurePreferences(ctx);
+        return true;
     }
 }

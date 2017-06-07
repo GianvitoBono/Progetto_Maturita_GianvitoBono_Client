@@ -10,6 +10,7 @@ import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -22,7 +23,6 @@ public class Chat extends AppCompatActivity {
     private SecurePreferences securePreferences;
     private String tel;
     private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
-    private Handler handler;
     private TextView messageBox;
 
     @Override
@@ -52,24 +52,27 @@ public class Chat extends AppCompatActivity {
         String name = i.getStringExtra("name");
         String surname = i.getStringExtra("surname");
         tel = i.getStringExtra("tel");
-        ImageView send = (ImageView) findViewById(R.id.send);
-        messageBox = (TextView) findViewById(R.id.messageBox);
+        View chatBox = findViewById(R.id.chatBox);
+        ImageView send = (ImageView) chatBox.findViewById(R.id.send);
+        messageBox = (TextView) chatBox.findViewById(R.id.messageBox);
 
+        send.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String message = messageBox.getText().toString();
+                messageBox.setText("");
+                if (message != null) {
+                    connectorService.comunicate(tel, message, new Handler() {
+                        @Override
+                        public void handleMessage(Message msg) {
+
+                        }
+                    });
+                }
+            }
+        });
 
         this.setTitle(name + " " + surname);
-    }
-
-    public void send(View v) {
-        String message = messageBox.getText().toString();
-        if (message != null) {
-            connectorService.comunicate(tel, message, handler);
-            handler = new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-
-                }
-            };
-        }
     }
 
     private ServiceConnection serviceConnection = new ServiceConnection() {

@@ -64,7 +64,14 @@ public class Connector extends Thread {
         this.port = Utils.SERVER_PORT;
         this.request = request;
         this.context = context;
-        this.flag = false;
+        this.async = async;
+    }
+
+    public Connector(String ip, Msg request, Context context, boolean async){
+        this.ip = ip;
+        this.port = Utils.SERVER_PORT;
+        this.request = request;
+        this.context = context;
         this.async = async;
     }
 
@@ -73,7 +80,7 @@ public class Connector extends Thread {
         try {
             socket = getConnection(ip, port);
             ioManager = new IOManager(socket);
-            System.out.println("[+] Connesso al server: " + ip + ":" + port);
+            System.out.println("[+] Connesso all'host: " + ip + ":" + port);
             ioManager.write(request);
             if(flag) {
                 if(async) {
@@ -81,6 +88,7 @@ public class Connector extends Thread {
                     synchronizedQueue.add(responce);
                 } else {
                     res = (Msg)ioManager.read();
+                    System.out.println(res.getId());
                 }
             }
             ioManager.close();
