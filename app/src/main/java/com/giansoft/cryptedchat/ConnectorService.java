@@ -25,7 +25,12 @@ public class ConnectorService extends Service {
     private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
     private boolean flag = false;
 
+
     public ConnectorService() {
+    }
+
+    public ConnectorService(Handler handler) {
+        this.handler = handler;
     }
 
     @Override
@@ -33,6 +38,13 @@ public class ConnectorService extends Service {
         super.onCreate();
         try {
             serverSocket = new ServerSocket(port);
+            new ServerThread(serverSocket.accept(), this, new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    handler.sendMessage(msg);
+                }
+            });
         } catch (IOException e) {
             e.printStackTrace();
         }

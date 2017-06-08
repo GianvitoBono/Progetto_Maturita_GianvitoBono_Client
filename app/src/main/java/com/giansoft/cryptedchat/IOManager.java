@@ -7,6 +7,7 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.PrintStream;
 import java.net.Socket;
+import java.security.Key;
 
 /**
  * Created by Gianvito on 27/11/2016.
@@ -56,10 +57,22 @@ public class IOManager {
         }
     }
 
+    public boolean writeCryptedJSON(Msg JSON, Key key) {
+        try {
+            String objToJSON = new Gson().toJson(JSON);
+            out.writeChars(Crypter.encryptWKey(objToJSON, key));
+            out.close();
+            return true;
+        } catch (Exception e) {
+            System.err.println("[-] Error: " + e);
+            return false;
+        }
+    }
+
     public boolean writeJSON(Msg JSON) {
         try {
             String objToJSON = new Gson().toJson(JSON);
-            out.writeChars(Crypter.encrypt(objToJSON));
+            out.writeChars(objToJSON);
             out.close();
             return true;
         } catch (Exception e) {

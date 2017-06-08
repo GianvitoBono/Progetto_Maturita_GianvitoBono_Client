@@ -112,6 +112,14 @@ public class Utils {
         return new Msg(GEN_KEY, data);
     }
 
+    public static Msg getSessionKey(String ip, Context ctx) {
+        SecurePreferences securePreferences = new SecurePreferences(ctx);
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(securePreferences.getString("tel"));
+        data.add(ip);
+        return new Msg(Utils.GET_KEY, data);
+    }
+
     public static boolean isKeyValid(String tel, Context ctx) {
         SecurePreferences securePreferences = new SecurePreferences(ctx);
         return true;
