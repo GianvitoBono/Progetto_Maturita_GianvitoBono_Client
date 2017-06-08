@@ -81,7 +81,7 @@ public class IOManager {
         }
     }
 
-    public boolean writeString(String msg) {
+    public boolean write(String msg) {
         try {
             out.writeChars(msg);
             out.close();
@@ -89,15 +89,6 @@ public class IOManager {
         } catch (Exception e) {
             System.err.println("[-] Error: " + e);
             return false;
-        }
-    }
-
-    public String readString() {
-        try {
-            return in.readUTF();
-        } catch (Exception e) {
-            System.err.println("[-] Error: " + e);
-            return null;
         }
     }
 

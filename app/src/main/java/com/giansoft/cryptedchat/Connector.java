@@ -24,6 +24,7 @@ import javax.net.ssl.TrustManagerFactory;
 public class Connector extends Thread {
 
     private Msg request;
+    private String sRequest;
     private Context context;
     private SynchronizedQueue<Object> synchronizedQueue;
 
@@ -33,9 +34,12 @@ public class Connector extends Thread {
     private int port;
     private boolean flag = true;
     private boolean async = true;
+    private boolean stringFlag = false;
+    private boolean objFlag = false;
     private Msg res;
+    private String sRes;
 
-    public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue){
+    public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue) {
         this.ip = Utils.SERVER_IP;
         this.port = Utils.SERVER_PORT;
         this.request = request;
@@ -43,7 +47,7 @@ public class Connector extends Thread {
         this.synchronizedQueue = synchronizedQueue;
     }
 
-    public Connector(String ip, int port, Msg request, Context context, SynchronizedQueue synchronizedQueue){
+    public Connector(String ip, int port, Msg request, Context context, SynchronizedQueue synchronizedQueue) {
         this.ip = ip;
         this.port = port;
         this.request = request;
@@ -51,7 +55,7 @@ public class Connector extends Thread {
         this.synchronizedQueue = synchronizedQueue;
     }
 
-    public Connector(Msg request, Context context){
+    public Connector(Msg request, Context context) {
         this.ip = Utils.SERVER_IP;
         this.port = Utils.SERVER_PORT;
         this.request = request;
@@ -59,7 +63,7 @@ public class Connector extends Thread {
         this.flag = false;
     }
 
-    public Connector(Msg request, Context context, boolean async){
+    public Connector(Msg request, Context context, boolean async) {
         this.ip = Utils.SERVER_IP;
         this.port = Utils.SERVER_PORT;
         this.request = request;
@@ -67,7 +71,7 @@ public class Connector extends Thread {
         this.async = async;
     }
 
-    public Connector(String ip, Msg request, Context context, boolean async){
+    public Connector(String ip, Msg request, Context context, boolean async) {
         this.ip = ip;
         this.port = Utils.SERVER_PORT;
         this.request = request;
@@ -75,26 +79,51 @@ public class Connector extends Thread {
         this.async = async;
     }
 
+    public Connector(String ip, String request, Context context, boolean async, boolean objFlag) {
+        this.ip = ip;
+        this.port = Utils.SERVER_PORT;
+        this.sRequest = request;
+        this.context = context;
+        this.async = async;
+        this.objFlag = objFlag;
+    }
+
+    public Connector(String ip, String request, Context context, boolean async) {
+        this.ip = ip;
+        this.port = Utils.SERVER_PORT;
+        this.sRequest = request;
+        this.context = context;
+        this.async = async;
+        stringFlag = true;
+    }
+
     @Override
-    public void run(){
+    public void run() {
         try {
             socket = getConnection(ip, port);
             ioManager = new IOManager(socket);
             System.out.println("[+] Connesso all'host: " + ip + ":" + port);
-            ioManager.write(request);
-            if(flag) {
-                if(async) {
-                    Object responce = ioManager.read();
-                    synchronizedQueue.add(responce);
-                } else {
-                    res = (Msg)ioManager.read();
-                    System.out.println(res.getId());
+            if (!objFlag) {
+                ioManager.write(request);
+                if (flag) {
+                    if (async) {
+                        Object responce = ioManager.read();
+                        synchronizedQueue.add(responce);
+                    } else {
+                        if (stringFlag)
+                            sRes = (String) ioManager.read();
+                        else
+                            res = (Msg) ioManager.read();
+                    }
                 }
+            } else {
+                ioManager.write("3");
+                ioManager.write(sRequest);
             }
             ioManager.close();
             socket.close();
 
-        } catch(UnknownHostException e) {
+        } catch (UnknownHostException e) {
             System.err.println("[-] Host non trovato");
         } catch (IOException e) {
             System.err.println("[-] Errore I/O");
@@ -103,6 +132,10 @@ public class Connector extends Thread {
 
     public Msg getRes() {
         return res;
+    }
+
+    public String getStringRes() {
+        return sRes;
     }
 
     protected SSLSocket getConnection(String ip, int port) throws IOException {

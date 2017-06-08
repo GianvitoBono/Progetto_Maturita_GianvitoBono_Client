@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.concurrent.Exchanger;
 
 import javax.crypto.SecretKey;
 
@@ -20,34 +21,42 @@ public class ConnectorService extends Service {
     private final IBinder connectorBinder = new ConnectorBinder();
     private ServerSocket serverSocket;
     private int port = Utils.SERVER_PORT;
-    private Handler handler;
     private Socket socket;
     private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
     private boolean flag = false;
+    private Context ctx = this;
 
 
     public ConnectorService() {
     }
 
-    public ConnectorService(Handler handler) {
-        this.handler = handler;
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
-        try {
-            serverSocket = new ServerSocket(port);
-            new ServerThread(serverSocket.accept(), this, new Handler() {
-                @Override
-                public void handleMessage(Message msg) {
-                    super.handleMessage(msg);
-                    handler.sendMessage(msg);
+
+    }
+
+    public void listen(final Handler handler) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    try {
+                        serverSocket = new ServerSocket(port);
+                        new ServerThread(serverSocket.accept(), ctx, new Handler() {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                super.handleMessage(msg);
+                                handler.sendMessage(msg);
+                            }
+                        }).start();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+
+                    }
                 }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+            }
+        }).start();
     }
 
     @Override
@@ -75,15 +84,16 @@ public class ConnectorService extends Service {
             Message msg = new Message();
             msg.arg1 = Utils.FAIL;
             SecurePreferences securePreferences = new SecurePreferences(this);
+            securePreferences.putString("dest", tel);
+            securePreferences.putString("message", message);
 
             Connector c = new Connector(Utils.getIP(tel), this, false);
             c.start();
             c.join();
             Msg res = c.getRes();
-            String ip = null;
+            String ip = (String) res.getData().get(0);
             if (res.getId() == Utils.SUCCESS) {
                 if (securePreferences.getKey(tel) == null) {
-                    ip = (String) res.getData().get(0);
                     c = new Connector(Utils.genSessionKey(tel), this, false);
                     c.start();
                     c.join();
@@ -95,10 +105,8 @@ public class ConnectorService extends Service {
                         handler.sendMessage(msg);
                 }
                 if (ip == null) return;
-                c = new Connector(ip, new Msg(Utils.HELLO, null), this, false);
+                c = new Connector(ip, "1", this, false);
                 c.start();
-                c.join();
-                res = c.getRes();
             } else
                 handler.sendMessage(msg);
 

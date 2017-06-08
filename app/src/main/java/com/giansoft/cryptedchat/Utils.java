@@ -32,6 +32,7 @@ public class Utils {
     public final static int NO_USERS = 151836;
     public final static int HELLO = 15052015;
     public final static int SECURE = 2112;
+    public final static int VALIDATE_KEY = 15;
 
     public static Msg login(String email, String passwd) {
         ArrayList<Object> data = new ArrayList<>();
@@ -103,6 +104,12 @@ public class Utils {
     public static Msg getIP(String tel) {
         ArrayList<Object> data = new ArrayList<>();
         data.add(tel);
+        return new Msg(GET_USER_IP, data);
+    }
+
+    public static Msg getTel(String ip) {
+        ArrayList<Object> data = new ArrayList<>();
+        data.add(ip);
         return new Msg(GET_USER_IP, data);
     }
 
