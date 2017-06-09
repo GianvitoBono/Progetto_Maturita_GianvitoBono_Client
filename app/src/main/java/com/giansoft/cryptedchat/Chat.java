@@ -59,17 +59,6 @@ public class Chat extends AppCompatActivity {
         send.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                connectorService.listen(new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        super.handleMessage(msg);
-                        Bundle data = msg.getData();
-                        int id = data.getInt("id");
-                        String mess = data.getString("mess");
-                        System.out.println(mess + "--------------------------------------------");
-                    }
-                });
-
                 String message = messageBox.getText().toString();
                 messageBox.setText("");
                 if (message != null) {
@@ -93,6 +82,15 @@ public class Chat extends AppCompatActivity {
             ConnectorService.ConnectorBinder binder = (ConnectorService.ConnectorBinder) iBinder;
             connectorService = binder.getService();
             isBound = true;
+            connectorService.listen(new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    Bundle data = msg.getData();
+                    String mess = data.getString("mess");
+                    System.out.println(mess + "--------------------------------------------");
+                }
+            });
         }
 
         @Override

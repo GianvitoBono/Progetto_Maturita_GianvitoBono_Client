@@ -38,6 +38,7 @@ public class Connector extends Thread {
     private boolean objFlag = false;
     private Msg res;
     private String sRes;
+    private boolean objRes = true;
 
     public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue) {
         this.ip = Utils.SERVER_IP;
@@ -71,6 +72,16 @@ public class Connector extends Thread {
         this.async = async;
     }
 
+    public Connector(String ip, Msg request, Context context, boolean async, boolean objFlag, boolean objRes) {
+        this.ip = ip;
+        this.port = Utils.SERVER_PORT;
+        this.request = request;
+        this.context = context;
+        this.async = async;
+        this.objFlag = objFlag;
+        this.objRes = objRes;
+    }
+
     public Connector(String ip, Msg request, Context context, boolean async) {
         this.ip = ip;
         this.port = Utils.SERVER_PORT;
@@ -79,55 +90,40 @@ public class Connector extends Thread {
         this.async = async;
     }
 
-    public Connector(String ip, String request, Context context, boolean async, boolean objFlag) {
-        this.ip = ip;
-        this.port = Utils.SERVER_PORT;
-        this.sRequest = request;
-        this.context = context;
-        this.async = async;
-        this.objFlag = objFlag;
-    }
-
-    public Connector(String ip, String request, Context context, boolean async) {
-        this.ip = ip;
-        this.port = Utils.SERVER_PORT;
-        this.sRequest = request;
-        this.context = context;
-        this.async = async;
-        stringFlag = true;
-    }
-
     @Override
     public void run() {
         try {
             socket = getConnection(ip, port);
             ioManager = new IOManager(socket);
             System.out.println("[+] Connesso all'host: " + ip + ":" + port);
-            if (!objFlag) {
+
+            if (!objFlag)
                 ioManager.write(request);
-                if (flag) {
-                    if (async) {
-                        Object responce = ioManager.read();
-                        synchronizedQueue.add(responce);
-                    } else {
-                        if (stringFlag)
-                            sRes = (String) ioManager.read();
-                        else
-                            res = (Msg) ioManager.read();
-                    }
+            else
+                ioManager.writeJSON(request);
+
+            if (flag) {
+                if (async) {
+                    Object responce = ioManager.read();
+                    synchronizedQueue.add(responce);
+                } else {
+                    if (stringFlag)
+                        sRes = (String) ioManager.read();
+                    else if (objFlag && objRes)
+                        res = ioManager.readJSON();
+                    else
+                        res = (Msg) ioManager.read();
                 }
-            } else {
-                ioManager.write("3");
-                ioManager.write(sRequest);
             }
+
             ioManager.close();
             socket.close();
-
         } catch (UnknownHostException e) {
             System.err.println("[-] Host non trovato");
         } catch (IOException e) {
             System.err.println("[-] Errore I/O");
         }
+
     }
 
     public Msg getRes() {

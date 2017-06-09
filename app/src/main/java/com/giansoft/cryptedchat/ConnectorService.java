@@ -33,30 +33,17 @@ public class ConnectorService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-
     }
 
-    public void listen(final Handler handler) {
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while(true) {
-                    try {
-                        serverSocket = new ServerSocket(port);
-                        new ServerThread(serverSocket.accept(), ctx, new Handler() {
-                            @Override
-                            public void handleMessage(Message msg) {
-                                super.handleMessage(msg);
-                                handler.sendMessage(msg);
-                            }
-                        }).start();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-
-                    }
-                }
+    public void listen(Handler handler) {
+        try {
+            serverSocket = new ServerSocket(Utils.SERVER_PORT);
+            while (true) {
+                new ServerThread(serverSocket.accept(), this, handler).start();
             }
-        }).start();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -84,9 +71,6 @@ public class ConnectorService extends Service {
             Message msg = new Message();
             msg.arg1 = Utils.FAIL;
             SecurePreferences securePreferences = new SecurePreferences(this);
-            securePreferences.putString("dest", tel);
-            securePreferences.putString("message", message);
-
             Connector c = new Connector(Utils.getIP(tel), this, false);
             c.start();
             c.join();
@@ -101,16 +85,22 @@ public class ConnectorService extends Service {
                     if (res.getId() == Utils.SUCCESS) {
                         SecretKey key = (SecretKey) res.getData().get(0);
                         securePreferences.putKey(tel, key);
+                        ArrayList<Object> data = new ArrayList<>();
+                        data.add(Crypter.encrypt(securePreferences.getString("tel")));
+                        data.add(Crypter.encryptWKey(message, key));
+                        data.add(Utils.getCurDate());
+                        new Connector(ip, new Msg(Utils.HELLO, data), this, false, true, false).start();
+                        msg.arg1 = Utils.SUCCESS;
+                        handler.sendMessage(msg);
                     } else
                         handler.sendMessage(msg);
                 }
-                if (ip == null) return;
-                c = new Connector(ip, "1", this, false);
-                c.start();
             } else
                 handler.sendMessage(msg);
 
         } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

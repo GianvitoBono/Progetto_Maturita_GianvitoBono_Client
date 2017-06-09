@@ -57,10 +57,10 @@ public class IOManager {
         }
     }
 
-    public boolean writeCryptedJSON(Msg JSON, Key key) {
+    public boolean writeJSON(Msg JSON) {
         try {
             String objToJSON = new Gson().toJson(JSON);
-            out.writeChars(Crypter.encryptWKey(objToJSON, key));
+            out.writeChars(Crypter.encrypt(objToJSON));
             out.close();
             return true;
         } catch (Exception e) {
@@ -69,15 +69,14 @@ public class IOManager {
         }
     }
 
-    public boolean writeJSON(Msg JSON) {
+    public Msg readJSON() {
         try {
-            String objToJSON = new Gson().toJson(JSON);
-            out.writeChars(objToJSON);
-            out.close();
-            return true;
+            String objJSON = Crypter.decrypt((String) in.readObject());
+            Gson gson = new Gson();
+            return gson.fromJson(objJSON, Msg.class);
         } catch (Exception e) {
-            System.err.println("[-] Error: " + e);
-            return false;
+            System.err.println("[-] Error: " + e.getStackTrace());
+            return null;
         }
     }
 
