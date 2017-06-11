@@ -87,7 +87,7 @@ public class Chat extends AppCompatActivity {
                 public void handleMessage(Message msg) {
                     super.handleMessage(msg);
                     Bundle data = msg.getData();
-                    String mess = data.getString("mess");
+                    String mess = data.getString("message");
                     System.out.println(mess + "--------------------------------------------");
                 }
             });

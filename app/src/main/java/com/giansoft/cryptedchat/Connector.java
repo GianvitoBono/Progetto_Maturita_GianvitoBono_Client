@@ -1,13 +1,14 @@
 package com.giansoft.cryptedchat;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.util.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.UnknownHostException;
+import java.net.Socket;
 import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 
@@ -18,120 +19,128 @@ import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManagerFactory;
 
 /**
- * Created by Gianvito on 12/11/2016.
+ * Created by Gianvito on 12/11/2016
  */
 
 public class Connector extends Thread {
 
-    private Msg request;
-    private String sRequest;
-    private Context context;
-    private SynchronizedQueue<Object> synchronizedQueue;
+    public final static int ASYNC_W_HANDLER = 1;
+    public final static int ASYNC_NO_HANDLER = 2;
+    public final static int USE_JSON_SERIALIZATION_CON_RES_ASYNC = 3;
+    public final static int USE_JSON_SERIALIZATION_NO_RES = 4;
+    public final static int SYNC_W_RES = 5;
+    public final static int USE_JSON_SERIALIZATION_CON_RES_SYNC = 6;
 
-    private SSLSocket socket;
+    private Msg req;
+    private Context context;
+    private Handler handler;
+
+    private Socket socket;
     private IOManager ioManager;
     private String ip;
     private int port;
-    private boolean flag = true;
-    private boolean async = true;
-    private boolean stringFlag = false;
-    private boolean objFlag = false;
     private Msg res;
-    private String sRes;
-    private boolean objRes = true;
+    private int mode;
 
-    public Connector(Msg request, Context context, SynchronizedQueue synchronizedQueue) {
-        this.ip = Utils.SERVER_IP;
-        this.port = Utils.SERVER_PORT;
-        this.request = request;
+    public Connector(Msg req, Context context, Handler handler) {
+        ip = Utils.SERVER_IP;
+        port = Utils.SERVER_PORT;
+        this.req = req;
         this.context = context;
-        this.synchronizedQueue = synchronizedQueue;
+        this.handler = handler;
+        mode = ASYNC_W_HANDLER;
     }
 
-    public Connector(String ip, int port, Msg request, Context context, SynchronizedQueue synchronizedQueue) {
-        this.ip = ip;
-        this.port = port;
-        this.request = request;
+    public Connector(Msg req, Context context) {
+        ip = Utils.SERVER_IP;
+        port = Utils.SERVER_PORT;
+        this.req = req;
         this.context = context;
-        this.synchronizedQueue = synchronizedQueue;
+        mode = ASYNC_NO_HANDLER;
     }
 
-    public Connector(Msg request, Context context) {
-        this.ip = Utils.SERVER_IP;
-        this.port = Utils.SERVER_PORT;
-        this.request = request;
+    public Connector(Msg req, Context context, int mode) {
+        ip = Utils.SERVER_IP;
+        port = Utils.SERVER_PORT;
+        this.req = req;
         this.context = context;
-        this.flag = false;
+        this.mode = mode;
     }
 
-    public Connector(Msg request, Context context, boolean async) {
-        this.ip = Utils.SERVER_IP;
-        this.port = Utils.SERVER_PORT;
-        this.request = request;
-        this.context = context;
-        this.async = async;
-    }
-
-    public Connector(String ip, Msg request, Context context, boolean async, boolean objFlag, boolean objRes) {
+    public Connector(String ip, Msg req, Context context, Handler handler, int mode) {
         this.ip = ip;
         this.port = Utils.SERVER_PORT;
-        this.request = request;
+        this.req = req;
         this.context = context;
-        this.async = async;
-        this.objFlag = objFlag;
-        this.objRes = objRes;
+        this.handler = handler;
+        this.mode = mode;
     }
 
-    public Connector(String ip, Msg request, Context context, boolean async) {
+    public Connector(String ip, Msg req, Context context, int mode) {
         this.ip = ip;
         this.port = Utils.SERVER_PORT;
-        this.request = request;
+        this.req = req;
         this.context = context;
-        this.async = async;
+        this.mode = mode;
     }
 
     @Override
     public void run() {
+        super.run();
         try {
-            socket = getConnection(ip, port);
-            ioManager = new IOManager(socket);
-            System.out.println("[+] Connesso all'host: " + ip + ":" + port);
+            Message msg = new Message();
+            Bundle bundle = new Bundle();
+            System.out.println("--------------------------------------------------------------------");
+            Log.d("Connector: IP", " " + ip);
+            System.out.println("--------------------------------------------------------------------");
 
-            if (!objFlag)
-                ioManager.write(request);
-            else
-                ioManager.writeJSON(request);
-
-            if (flag) {
-                if (async) {
-                    Object responce = ioManager.read();
-                    synchronizedQueue.add(responce);
-                } else {
-                    if (stringFlag)
-                        sRes = (String) ioManager.read();
-                    else if (objFlag && objRes)
-                        res = ioManager.readJSON();
-                    else
-                        res = (Msg) ioManager.read();
-                }
+            switch (mode) {
+                case ASYNC_W_HANDLER:
+                    socket = getConnection(ip, port);
+                    ioManager = new IOManager(socket);
+                    ioManager.write(req);
+                    res = (Msg) ioManager.read();
+                    bundle.putSerializable("res", res);
+                    msg.setData(bundle);
+                    handler.sendMessage(msg);
+                    break;
+                case ASYNC_NO_HANDLER:
+                    socket = getConnection(ip, port);
+                    ioManager = new IOManager(socket);
+                    ioManager.write(req);
+                    break;
+                case SYNC_W_RES:
+                    socket = getConnection(ip, port);
+                    ioManager = new IOManager(socket);
+                    ioManager.write(req);
+                    res = (Msg) ioManager.read();
+                    break;
+                case USE_JSON_SERIALIZATION_CON_RES_ASYNC:
+                    socket = new Socket(ip, port);
+                    ioManager = new IOManager(socket, IOManager.JSON);
+                    ioManager.writeJSON(req);
+                    res = ioManager.readJSON();
+                    bundle.putSerializable("res", res);
+                    msg.setData(bundle);
+                    handler.sendMessage(msg);
+                    break;
+                case USE_JSON_SERIALIZATION_NO_RES:
+                    socket = new Socket(ip, port);
+                    ioManager = new IOManager(socket, IOManager.JSON);
+                    ioManager.writeJSON(req);
+                    break;
+                case USE_JSON_SERIALIZATION_CON_RES_SYNC:
+                    socket = new Socket(ip, port);
+                    ioManager = new IOManager(socket, IOManager.JSON);
+                    ioManager.writeJSON(req);
+                    res = ioManager.readJSON();
+                    break;
+                default:
             }
-
-            ioManager.close();
             socket.close();
-        } catch (UnknownHostException e) {
-            System.err.println("[-] Host non trovato");
-        } catch (IOException e) {
-            System.err.println("[-] Errore I/O");
+        } catch (Exception e) {
+            System.err.println("[-] Error: " + e.getStackTrace());
         }
-
-    }
-
-    public Msg getRes() {
-        return res;
-    }
-
-    public String getStringRes() {
-        return sRes;
     }
 
     protected SSLSocket getConnection(String ip, int port) throws IOException {
@@ -152,4 +161,7 @@ public class Connector extends Thread {
         }
     }
 
+    public Msg getRes() {
+        return res;
+    }
 }

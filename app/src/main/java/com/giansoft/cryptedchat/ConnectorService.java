@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
-import java.util.concurrent.Exchanger;
 
 import javax.crypto.SecretKey;
 
@@ -35,15 +34,20 @@ public class ConnectorService extends Service {
         super.onCreate();
     }
 
-    public void listen(Handler handler) {
-        try {
-            serverSocket = new ServerSocket(Utils.SERVER_PORT);
-            while (true) {
-                new ServerThread(serverSocket.accept(), this, handler).start();
+    public void listen(final Handler handler) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    serverSocket = new ServerSocket(Utils.SERVER_PORT);
+                    while (true) {
+                        new ServerThread(serverSocket.accept(), ctx, handler).start();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        }).start();
     }
 
     @Override
@@ -51,13 +55,13 @@ public class ConnectorService extends Service {
         return connectorBinder;
     }
 
-    public void comunicate(Msg request, Context context, SynchronizedQueue<Object> synchronizedQueue) {
-        Connector connector = new Connector(request, context, synchronizedQueue);
+    public void comunicate(Msg request, Context context, Handler handler) {
+        Connector connector = new Connector(request, context, handler);
         connector.start();
     }
 
-    public void comunicate(String ip, int port, Msg request, Context context, SynchronizedQueue<Object> synchronizedQueue) {
-        Connector connector = new Connector(ip, port, request, context, synchronizedQueue);
+    public void comunicate(String ip, Msg request, Context context, Handler handler) {
+        Connector connector = new Connector(ip, request, context, handler, Connector.ASYNC_W_HANDLER);
         connector.start();
     }
 
@@ -71,30 +75,30 @@ public class ConnectorService extends Service {
             Message msg = new Message();
             msg.arg1 = Utils.FAIL;
             SecurePreferences securePreferences = new SecurePreferences(this);
-            Connector c = new Connector(Utils.getIP(tel), this, false);
+            Connector c = new Connector(Utils.getIP(tel), this, Connector.SYNC_W_RES);
             c.start();
             c.join();
             Msg res = c.getRes();
             String ip = (String) res.getData().get(0);
+            ip = ip.substring(1);
             if (res.getId() == Utils.SUCCESS) {
-                if (securePreferences.getKey(tel) == null) {
-                    c = new Connector(Utils.genSessionKey(tel), this, false);
+                c = new Connector(Utils.genSessionKey(tel), this, Connector.SYNC_W_RES);
+                c.start();
+                c.join();
+                res = c.getRes();
+                if (res.getId() == Utils.SUCCESS) {
+                    SecretKey key = (SecretKey) res.getData().get(0);
+                    securePreferences.putKey(tel, key);
+                    ArrayList<Object> data = new ArrayList<>();
+                    data.add(Crypter.encrypt(securePreferences.getString("tel")));
+                    data.add(Crypter.encryptWKey(message, key));
+                    data.add(Utils.getCurDate());
+                    c = new Connector(ip, new Msg(Utils.HELLO, data), this, Connector.USE_JSON_SERIALIZATION_NO_RES);
                     c.start();
-                    c.join();
-                    res = c.getRes();
-                    if (res.getId() == Utils.SUCCESS) {
-                        SecretKey key = (SecretKey) res.getData().get(0);
-                        securePreferences.putKey(tel, key);
-                        ArrayList<Object> data = new ArrayList<>();
-                        data.add(Crypter.encrypt(securePreferences.getString("tel")));
-                        data.add(Crypter.encryptWKey(message, key));
-                        data.add(Utils.getCurDate());
-                        new Connector(ip, new Msg(Utils.HELLO, data), this, false, true, false).start();
-                        msg.arg1 = Utils.SUCCESS;
-                        handler.sendMessage(msg);
-                    } else
-                        handler.sendMessage(msg);
-                }
+                    msg.arg1 = Utils.SUCCESS;
+                    handler.sendMessage(msg);
+                } else
+                    handler.sendMessage(msg);
             } else
                 handler.sendMessage(msg);
 

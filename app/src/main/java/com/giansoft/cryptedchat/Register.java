@@ -31,14 +31,14 @@ public class Register extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, ConnectorService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        if(connectorService != null)
+        if (connectorService != null)
             unbindService(serviceConnection);
     }
 
@@ -65,14 +65,14 @@ public class Register extends AppCompatActivity {
             bReg.setVisibility(View.INVISIBLE);
             progressBar.setVisibility(View.VISIBLE);
 
-            if(     etUsername.getText() == null &&
+            if (etUsername.getText() == null &&
                     etName.getText() == null &&
                     etSurname.getText() == null &&
                     etEmail.getText() == null &&
                     etCell.getText() == null &&
                     etPassword.getText() == null &&
                     etRPassword.getText() == null)
-                if(!etPassword.getText().toString().equals(etRPassword.getText().toString()))
+                if (!etPassword.getText().toString().equals(etRPassword.getText().toString()))
                     Utils.errPassNotEquals(this);
                 else
                     Utils.errNullUserOrPassToast(this);
@@ -83,42 +83,28 @@ public class Register extends AppCompatActivity {
                         etPassword.getText().toString(),
                         etUsername.getText().toString(),
                         etEmail.getText().toString()),
-                        this, synchronizedQueue);
+                        this,
+                        new Handler() {
+                            @Override
+                            public void handleMessage(Message msg) {
+                                super.handleMessage(msg);
+                                Bundle bundle = msg.getData();
+                                Msg responce = (Msg) bundle.getSerializable("res");
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (synchronizedQueue.isEmpty())
-                            try {
-                                Thread.sleep(3);
-                            } catch (InterruptedException e) {
-                                System.err.println("[-] Error: " + e);
+                                if ((int) responce.getData().get(0) == 1) {
+                                    securePreferences.putString("tel", etCell.getText().toString());
+                                    securePreferences.putBoolean("reg", true);
+                                    startActivity(new Intent(Register.this, Main.class).putExtra("name", etName.getText().toString())
+                                            .putExtra("surname", etSurname.getText().toString()));
+                                    finish();
+                                } else {
+                                    Utils.errRegisterToast(Register.this);
+                                }
+
+                                bReg.setVisibility(View.VISIBLE);
+                                progressBar.setVisibility(View.INVISIBLE);
                             }
-                        handler.sendEmptyMessage(0);
-                    }
-
-                }).start();
-
-                handler = new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        ArrayList<Object> results = synchronizedQueue.getAll(true);
-                        if (results.size() == 1) {
-                            Msg responce = (Msg) results.get(0);
-                            if ((int) responce.getData().get(0) == 1) {
-                                securePreferences.putString("tel", etCell.getText().toString());
-                                securePreferences.putBoolean("reg", true);
-                                startActivity(new Intent(Register.this, Main.class).putExtra("name", etName.getText().toString())
-                                        .putExtra("surname", etSurname.getText().toString()));
-                                finish();
-                            } else {
-                                Utils.errRegisterToast(Register.this);
-                            }
-                        }
-                        bReg.setVisibility(View.VISIBLE);
-                        progressBar.setVisibility(View.INVISIBLE);
-                    }
-                };
+                        });
             }
         } catch (Exception e) {
             e.printStackTrace();

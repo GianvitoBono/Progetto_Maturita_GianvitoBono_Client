@@ -36,14 +36,14 @@ public class Login extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        bindService(new Intent(this, ConnectorService.class),serviceConnection , Context.BIND_AUTO_CREATE);
+        bindService(new Intent(this, ConnectorService.class), serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
 
-        if(connectorService != null)
+        if (connectorService != null)
             unbindService(serviceConnection);
     }
 
@@ -53,6 +53,8 @@ public class Login extends AppCompatActivity {
         setContentView(R.layout.activity_login);
         securePreferences = new SecurePreferences(this);
         /*if(securePreferences.getBoolean("logged")) {
+            String name = securePreferences.getString("name");
+            String surname = securePreferences.getString("surname");
             startActivity(new Intent(Login.this, Main.class)
                     .putExtra("name", name)
                     .putExtra("surname", surname)
@@ -64,7 +66,7 @@ public class Login extends AppCompatActivity {
         bLogin = (Button) findViewById(R.id.bLogin);
         bReg = (Button) findViewById(R.id.bReg);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        etEmail = (EditText) findViewById(R.id.etEmail) ;
+        etEmail = (EditText) findViewById(R.id.etEmail);
         etPassword = (EditText) findViewById(R.id.etPassword);
         //----------------------------------------------------------
     }
@@ -89,51 +91,30 @@ public class Login extends AppCompatActivity {
             bLogin.setVisibility(View.GONE);
             bReg.setVisibility(View.GONE);
             progressBar.setVisibility(View.VISIBLE);
-            connectorService.comunicate(Utils.login(etEmail.getText().toString(), etPassword.getText().toString()), this, synchronizedQueue);
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    while(synchronizedQueue.isEmpty())
-                        try {
-                            Thread.sleep(3);
-                        } catch (InterruptedException e) {
-                            System.err.println("[-] Error: " + e);
-                        }
-                    handler.sendEmptyMessage(0);
-                }
-
-            }).start();
-
-            handler = new Handler(){
+            connectorService.comunicate(Utils.login(etEmail.getText().toString(), etPassword.getText().toString()), this, new Handler() {
                 @Override
                 public void handleMessage(Message msg) {
-                    ArrayList<Object> results = synchronizedQueue.getAll(true);
-                    if(results.size() == 1) {
-                        Msg responce = (Msg)results.get(0);
-                        String result = (String) responce.getData().get(0);
-                        if(result.equals("success")) {
-                            String name = (String) responce.getData().get(1);
-                            String surname = (String) responce.getData().get(2);
-                            securePreferences.putBoolean("logged", true);
-                            startActivity(new Intent(Login.this, Main.class)
-                                    .putExtra("name", name)
-                                    .putExtra("surname", surname)
-                                    .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
-                            finish();
-                        } else {
-                            Utils.errLoginToast(Login.this);
-                        }
+                    super.handleMessage(msg);
+                    Bundle bundle = msg.getData();
+                    Msg responce = (Msg) bundle.getSerializable("res");
 
+                    String result = (String) responce.getData().get(0);
+                    if (result.equals("success")) {
+                        String name = (String) responce.getData().get(1);
+                        String surname = (String) responce.getData().get(2);
+                        securePreferences.putBoolean("logged", true);
+                        securePreferences.putString("name", name);
+                        securePreferences.putString("surname", surname);
+                        startActivity(new Intent(Login.this, Main.class)
+                                .putExtra("name", name)
+                                .putExtra("surname", surname)
+                                .addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION));
+                        finish();
                     } else {
-                        try {
-                            throw new Exception();
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
+                        Utils.errLoginToast(Login.this);
                     }
                 }
-            };
+            });
 
         } catch (Exception e) {
             e.printStackTrace();

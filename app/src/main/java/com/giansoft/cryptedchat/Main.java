@@ -58,7 +58,7 @@ public class Main extends AppCompatActivity
         super.onDestroy();
 
         connectorService.comunicate(Utils.delIP(securePreferences.getString("tel")), this);
-        if(connectorService != null)
+        if (connectorService != null)
             unbindService(serviceConnection);
     }
 
@@ -98,12 +98,12 @@ public class Main extends AppCompatActivity
                 Contact c = (Contact) o;
                 System.out.println(c.getTel());
                 startActivity(new Intent(Main.this, Chat.class).putExtra("name", c.getName())
-                                                               .putExtra("surname", c.getSurname())
-                                                               .putExtra("tel", c.getTel()));
+                        .putExtra("surname", c.getSurname())
+                        .putExtra("tel", c.getTel()));
             }
         });
 
-        if(securePreferences.getString("tel") == null)
+        if (securePreferences.getString("tel") == null)
             showTelDialog();
 
 
@@ -146,7 +146,7 @@ public class Main extends AppCompatActivity
         btOk.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(!etTel.getText().toString().isEmpty()) {
+                if (!etTel.getText().toString().isEmpty()) {
                     securePreferences.putString("tel", etTel.getText().toString());
                     connectorService.comunicate(Utils.logIP(etTel.getText().toString()), Main.this);
                     dialog.dismiss();
@@ -164,10 +164,10 @@ public class Main extends AppCompatActivity
         dialog.show();
     }
 
-    public void addUsersToList(){
+    public void addUsersToList() {
         ArrayList<Contact> newContacts = new SQLiteManager(this).getUsers();
         contactAdapter.clear();
-        if(newContacts != null && !newContacts.isEmpty())
+        if (newContacts != null && !newContacts.isEmpty())
             contactAdapter.addAll(newContacts);
     }
 
@@ -190,73 +190,59 @@ public class Main extends AppCompatActivity
                 requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
                 return;
             }
-                Cursor phones = getContentResolver()
-                        .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
-                ArrayList<Object> telNumbers = new ArrayList<>();
+            Cursor phones = getContentResolver()
+                    .query(ContactsContract.CommonDataKinds.Phone.CONTENT_URI, null, null, null, null);
+            ArrayList<Object> telNumbers = new ArrayList<>();
 
-                while (phones.moveToNext()) {
-                    String tmp = phones.getString(
-                            phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("\\s+", "");
-                    String phoneNumber;
-                    if (tmp.charAt(0) == '+')
-                        phoneNumber = tmp.substring(3);
-                    else
-                        phoneNumber = tmp;
+            while (phones.moveToNext()) {
+                String tmp = phones.getString(
+                        phones.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER)).replaceAll("\\s+", "");
+                String phoneNumber;
+                if (tmp.charAt(0) == '+')
+                    phoneNumber = tmp.substring(3);
+                else
+                    phoneNumber = tmp;
 
-                    if (!telNumbers.contains(phoneNumber))
-                        telNumbers.add(phoneNumber);
-                }
-                phones.close();
+                if (!telNumbers.contains(phoneNumber))
+                    telNumbers.add(phoneNumber);
+            }
+            phones.close();
 
-                connectorService.comunicate(Utils.checkUsers(telNumbers), Main.this, synchronizedQueue);
+            connectorService.comunicate(Utils.checkUsers(telNumbers), Main.this, new Handler() {
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    Bundle bundle = msg.getData();
+                    Msg responce = (Msg) bundle.getSerializable("res");
 
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        while (synchronizedQueue.isEmpty())
-                            try {
-                                Thread.sleep(1);
-                            } catch (InterruptedException e) {
-                                System.err.println("[-] Error: " + e);
+                    if (responce != null && responce.getId() != 151836) {
+                        if (!responce.getData().isEmpty()) {
+                            new SQLiteManager(Main.this).clearUsers(true);
+                            for (Object c : responce.getData()) {
+                                Contact contact = (Contact) c;
+                                new SQLiteManager(Main.this).addUser(contact.getName(),
+                                        contact.getSurname(),
+                                        contact.getUsername(),
+                                        contact.getTel());
                             }
-                        handler.sendEmptyMessage(0);
-                    }
-
-                }).start();
-
-                handler = new Handler() {
-                    @Override
-                    public void handleMessage(Message msg) {
-                        ArrayList<Object> results = synchronizedQueue.getAll(true);
-                        if (results.size() == 1) {
-                            Msg responce = (Msg) results.get(0);
-                            if (responce != null && responce.getId() != 151836) {
-                                if (!responce.getData().isEmpty()) {
-                                    new SQLiteManager(Main.this).clearUsers(true);
-                                    for (Object c : responce.getData()) {
-                                        Contact contact = (Contact) c;
-                                        new SQLiteManager(Main.this).addUser(contact.getName(),
-                                                contact.getSurname(),
-                                                contact.getUsername(),
-                                                contact.getTel());
-                                    }
-                                    addUsersToList();
-                                }
-                            }
-                        } else {
-                            try {
-                                throw new Exception();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            addUsersToList();
+                        }
+                    } else {
+                        try {
+                            throw new Exception();
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
-                };
-                //--------------------------------------------------------------------------------------
+                }
+            });
 
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            //--------------------------------------------------------------------------------------
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
     }
 
