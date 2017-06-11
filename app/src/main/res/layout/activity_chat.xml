@@ -5,13 +5,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context="com.giansoft.cryptedchat.Chat">
-
-    <ListView
+    <com.github.bassaer.chatmessageview.views.MessageView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:id="@+id/chatMessageView"
         android:layout_above="@+id/chatBox"
-        android:id="@+id/lvChat" />
-
+        android:layout_alignParentEnd="true">
+    </com.github.bassaer.chatmessageview.views.MessageView>
     <include
         layout="@layout/type_message_area"
         android:layout_width="match_parent"
