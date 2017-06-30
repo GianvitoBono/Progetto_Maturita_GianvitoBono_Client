@@ -24,6 +24,7 @@ public class ConnectorService extends Service {
     private SynchronizedQueue<Object> synchronizedQueue = new SynchronizedQueue<>();
     private boolean flag = false;
     private Context ctx = this;
+    private Handler handler = null;
 
 
     public ConnectorService() {
@@ -32,9 +33,6 @@ public class ConnectorService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-    }
-
-    public void listen(final Handler handler) {
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -53,6 +51,14 @@ public class ConnectorService extends Service {
     @Override
     public IBinder onBind(Intent intent) {
         return connectorBinder;
+    }
+
+    public void setHandler(Handler handler) {
+        this.handler = handler;
+    }
+
+    public void unsetHandler() {
+        handler = null;
     }
 
     public void comunicate(Msg request, Context context, Handler handler) {
@@ -80,7 +86,9 @@ public class ConnectorService extends Service {
             c.join();
             Msg res = c.getRes();
             String ip = (String) res.getData().get(0);
-            ip = ip.substring(1);
+            if (ip.subSequence(0, 1).equals("/"))
+                ip = ip.substring(1);
+
             if (res.getId() == Utils.SUCCESS) {
                 c = new Connector(Utils.genSessionKey(tel), this, Connector.SYNC_W_RES);
                 c.start();
@@ -92,8 +100,8 @@ public class ConnectorService extends Service {
                     ArrayList<Object> data = new ArrayList<>();
                     data.add(Crypter.encrypt(securePreferences.getString("tel")));
                     data.add(Crypter.encryptWKey(message, key));
-                    data.add(Utils.getCurDate());
-                    c = new Connector(ip, new Msg(Utils.HELLO, data), this, Connector.USE_JSON_SERIALIZATION_NO_RES);
+                    data.add(Crypter.encryptWKey(Utils.getCurDate(), key));
+                    c = new Connector(ip, new Msg(Utils.HELLO, data), this, Connector.USE_JSON_SERIALIZATION_CON_RES_SYNC);
                     c.start();
                     msg.arg1 = Utils.SUCCESS;
                     handler.sendMessage(msg);

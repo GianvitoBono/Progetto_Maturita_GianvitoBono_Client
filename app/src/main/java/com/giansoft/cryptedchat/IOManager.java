@@ -6,15 +6,12 @@ import com.google.gson.Gson;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStreamWriter;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.security.Key;
 
 /**
  * Created by Gianvito on 27/11/2016.
@@ -81,8 +78,8 @@ public class IOManager {
     public boolean writeJSON(Msg JSON) {
         try {
             String objToJSON = new Gson().toJson(JSON);
-            Log.d("IOManager", objToJSON);
-            sOut.println(objToJSON);//Crypter.encrypt(objToJSON));
+            Log.d("IOManager", "-----------------------------------\n" + objToJSON + "\n---------------------------------------------------");
+            sOut.println(objToJSON);
             sOut.close();
             return true;
         } catch (Exception e) {
@@ -93,7 +90,7 @@ public class IOManager {
 
     public Msg readJSON() {
         try {
-            String objJSON = sIn.readLine();//Crypter.decrypt(sIn.readLine());
+            String objJSON = sIn.readLine();
             Gson gson = new Gson();
             return gson.fromJson(objJSON, Msg.class);
         } catch (Exception e) {

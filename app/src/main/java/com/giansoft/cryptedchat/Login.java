@@ -4,23 +4,15 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
-import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Objects;
 
 public class Login extends AppCompatActivity {
 
@@ -52,6 +44,7 @@ public class Login extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
         securePreferences = new SecurePreferences(this);
+        new SQLiteManager(this).clearMess(true);
         /*if(securePreferences.getBoolean("logged")) {
             String name = securePreferences.getString("name");
             String surname = securePreferences.getString("surname");

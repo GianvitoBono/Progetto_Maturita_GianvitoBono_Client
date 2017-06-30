@@ -140,6 +140,7 @@ public class Connector extends Thread {
             socket.close();
         } catch (Exception e) {
             System.err.println("[-] Error: " + e.getStackTrace());
+            Log.i("Connector --- --- ---", "error", e);
         }
     }
 

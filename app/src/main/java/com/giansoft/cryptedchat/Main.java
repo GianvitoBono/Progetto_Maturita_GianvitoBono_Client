@@ -20,6 +20,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
@@ -215,12 +216,13 @@ public class Main extends AppCompatActivity
                     Bundle bundle = msg.getData();
                     Msg responce = (Msg) bundle.getSerializable("res");
 
-                    if (responce != null && responce.getId() != 151836) {
+                    if (responce != null && responce.getId() != Utils.NO_USERS) {
                         if (!responce.getData().isEmpty()) {
                             new SQLiteManager(Main.this).clearUsers(true);
                             for (Object c : responce.getData()) {
                                 Contact contact = (Contact) c;
-                                new SQLiteManager(Main.this).addUser(contact.getName(),
+                                new SQLiteManager(Main.this).addUser(
+                                        contact.getName(),
                                         contact.getSurname(),
                                         contact.getUsername(),
                                         contact.getTel());
@@ -232,6 +234,7 @@ public class Main extends AppCompatActivity
                             throw new Exception();
                         } catch (Exception e) {
                             e.printStackTrace();
+                            Log.i("Main", "error", e);
                         }
                     }
                 }

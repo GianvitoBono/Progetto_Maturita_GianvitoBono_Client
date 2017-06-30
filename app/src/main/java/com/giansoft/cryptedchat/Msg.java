@@ -19,6 +19,9 @@ public class Msg implements Serializable{
         this.data = data;
     }
 
+    public Msg() {
+    }
+
     public int getId() {
         return id;
     }

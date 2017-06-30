@@ -12,7 +12,7 @@ import java.util.Calendar;
  */
 
 public class Utils {
-    public static final String SERVER_IP = "192.168.0.2";
+    public static final String SERVER_IP = "192.168.0.6";
     public static final int SERVER_PORT = 3943;
     public static final String REGEX = ":";
 
@@ -33,6 +33,7 @@ public class Utils {
     public final static int HELLO = 15052015;
     public final static int SECURE = 2112;
     public final static int VALIDATE_KEY = 15;
+    public final static int GET_NAME = 16;
 
     public static Msg login(String email, String passwd) {
         ArrayList<Object> data = new ArrayList<>();

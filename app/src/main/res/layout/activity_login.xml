@@ -28,7 +28,7 @@
             android:layout_marginRight="20dp"
             android:background="@drawable/bg_edittext"
             android:ems="10"
-            android:hint="Email"
+            android:hint="Nome utente"
             android:inputType="textEmailAddress" />
 
         <EditText

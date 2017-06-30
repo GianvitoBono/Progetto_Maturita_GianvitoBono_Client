@@ -3,14 +3,13 @@ package com.giansoft.cryptedchat;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.StrictMode;
 
 /**
  * Created by Gianvito on 14/02/2017.
  */
 
 public class SQLiteHelper extends SQLiteOpenHelper{
-    private final static int DB_VERSION = 2;
+    private final static int DB_VERSION = 3;
     private final static String DB_NAME = "com.giansoft.cryptedchat.db";
     private final static String TB_USERS = "users";
         private final static String USERS_NAME = "name";
@@ -35,7 +34,7 @@ public class SQLiteHelper extends SQLiteOpenHelper{
             MESSAGES_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
             MESSAGES_USER_FK + " TEXT, " +
             MESSAGES_MESSAGE + " TEXT, " +
-            MESSAGES_SENT + " TEXT, " +
+            MESSAGES_SENT + " INTEGER, " +
             " FOREIGN KEY (" + MESSAGES_USER_FK + ") REFERENCES " + TB_USERS + "(" + USERS_TEL + ") " +
             ");";
 
